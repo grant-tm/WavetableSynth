@@ -8,6 +8,7 @@ using Wavetable = juce::AudioBuffer<float>;
 class WavetableOscillator
 {
 public:
+    
     WavetableOscillator();
     ~WavetableOscillator();
 
