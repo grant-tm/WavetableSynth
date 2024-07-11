@@ -93,7 +93,7 @@ void WavetableSynthAudioProcessor::changeProgramName (int index, const juce::Str
 //==============================================================================
 void WavetableSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    sineOscillator.setSampleRate((float)sampleRate);
+    sineWavetableOscillator.setSampleRate((float) sampleRate);
 }
 
 void WavetableSynthAudioProcessor::releaseResources()
@@ -137,7 +137,7 @@ void WavetableSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    sineOscillator.fillBuffer(buffer);
+    sineWavetableOscillator.fillBuffer(buffer);
 }
 
 //==============================================================================
