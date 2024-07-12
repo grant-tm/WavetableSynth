@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="KZDN7z" name="WavetableSynth" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginVST3Category="Synth"
+              pluginVSTCategory="kPlugCategSynth" pluginAUMainType="'augn'"
+              cppLanguageStandard="17" pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
+              pluginFormats="buildVST3">
   <MAINGROUP id="mUcVvk" name="WavetableSynth">
     <GROUP id="{142DF1E7-718A-1031-2A13-D414D869B7E9}" name="Source">
       <FILE id="qMYAla" name="PluginProcessor.cpp" compile="1" resource="0"
