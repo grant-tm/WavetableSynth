@@ -9,9 +9,12 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "SineOscillator.h"
-#include "WavetableOscillator.h"
-#include "SineWavetableOscillator.h"
+#include "WavetableSynthesizerVoice.h"
+
+class SynthesizerVoice : public juce::SynthesiserVoice
+{
+
+};
 
 //==============================================================================
 class WavetableSynthAudioProcessor  : public juce::AudioProcessor
@@ -56,7 +59,9 @@ public:
 
 private:
 
-    SineWavetableOscillator sineWavetableOscillator;
+    WavetableSynthesizerVoice sineVoice;
+    juce::Synthesiser synthesizer;
+    
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WavetableSynthAudioProcessor)

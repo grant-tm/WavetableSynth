@@ -9,6 +9,22 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+void generateSineWavetable(Wavetable& tableToFill, int resolution)
+{
+    tableToFill.setSize(1, resolution);
+    auto* samples = tableToFill.getWritePointer(0);
+
+    auto angleDelta = juce::MathConstants<float>::twoPi / (float)(resolution - 1);
+    auto currentAngle = 0.0;
+
+    for (int i = 0; i < resolution; ++i)
+    {
+        auto sample = std::sin(currentAngle);
+        samples[i] = (float)sample;
+        currentAngle += angleDelta;
+    }
+}
+
 //==============================================================================
 WavetableSynthAudioProcessor::WavetableSynthAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -22,6 +38,14 @@ WavetableSynthAudioProcessor::WavetableSynthAudioProcessor()
     )
 #endif
 {
+    Wavetable wavetable;
+    generateSineWavetable(wavetable, 256);
+
+    synthesizer.clearVoices();
+    synthesizer.addVoice(new WavetableSynthesizerVoice(wavetable));
+
+    synthesizer.clearSounds();
+    synthesizer.addSound(new WavetableSynthesizerSound());
 }
 
 WavetableSynthAudioProcessor::~WavetableSynthAudioProcessor()
@@ -92,13 +116,11 @@ void WavetableSynthAudioProcessor::changeProgramName (int index, const juce::Str
 //==============================================================================
 void WavetableSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    sineWavetableOscillator.setSampleRate((float) sampleRate);
+    synthesizer.setCurrentPlaybackSampleRate(sampleRate);
 }
 
 void WavetableSynthAudioProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -108,15 +130,10 @@ bool WavetableSynthAudioProcessor::isBusesLayoutSupported (const BusesLayout& la
         juce::ignoreUnused (layouts);
         return true;
     #else
-        // This is the place where you check if the layout is supported.
-        // In this template code we only support mono or stereo.
-        // Some plugin hosts, such as certain GarageBand versions, will only
-        // load plugins that support stereo bus layouts.
         if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
          && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
             return false;
 
-        // This checks if the input layout matches the output layout
         #if ! JucePlugin_IsSynth
             if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
                 return false;
@@ -135,7 +152,7 @@ void WavetableSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    sineWavetableOscillator.fillBuffer(buffer);
+    synthesizer.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
 //==============================================================================
