@@ -79,7 +79,7 @@ float WavetableSynthesizerVoice::getNextSample()
     // TODO: SIMD
 
     // select 4 samples around sampleIndex
-    float val0 = wavetable.getSample(0, (sampleIndex - 1) % wavetableSize);
+    float val0 = wavetable.getSample(0, (sampleIndex - 1 + wavetableSize) % wavetableSize);
     float val1 = wavetable.getSample(0, (sampleIndex + 0) % wavetableSize);
     float val2 = wavetable.getSample(0, (sampleIndex + 1) % wavetableSize);
     float val3 = wavetable.getSample(0, (sampleIndex + 2) % wavetableSize);
