@@ -146,7 +146,7 @@ void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float>& output
 
 void WavetableSynthesizerVoice::setRenderSampleRate(float newRenderSampleRate)
 {
-    if (newRenderSampleRate >= 0.f)
+    if (newRenderSampleRate > 0.f)
     {
         renderSampleRate = newRenderSampleRate;
     }
@@ -154,12 +154,11 @@ void WavetableSynthesizerVoice::setRenderSampleRate(float newRenderSampleRate)
     {
         renderSampleRate = 0.f;
     }
-
 }
 
 void WavetableSynthesizerVoice::setRenderFrequency(float newRenderFrequency)
 {
-    if (newRenderFrequency >= 0.f)
+    if (newRenderFrequency > 0.f)
     {
         renderFrequency = newRenderFrequency;
     }
@@ -167,7 +166,6 @@ void WavetableSynthesizerVoice::setRenderFrequency(float newRenderFrequency)
     {
         renderFrequency = 0.f;
     }
-   
 }
 
 void WavetableSynthesizerVoice::updateRenderFrequencyFromMidiInput()
@@ -184,13 +182,16 @@ void WavetableSynthesizerVoice::startNote(int midiNoteNumber, float velocity,
 {
     setPitchBendPosition(pitchWheelPosition);
     updateRenderFrequencyFromMidiInput();
-    this->velocity = velocity;
+    renderLevel = velocity;
 }
 
 void WavetableSynthesizerVoice::stopNote(float velocity, bool allowTailOff)
 {
     if (velocity == 0)
+    {
+        renderLevel = velocity;
         clearCurrentNote();
+}
 }
 
 //==============================================================================
@@ -200,16 +201,15 @@ void WavetableSynthesizerVoice::stopNote(float velocity, bool allowTailOff)
 void WavetableSynthesizerVoice::pitchWheelMoved(int newPitchWheelValue)
 {
     setPitchBendPosition(newPitchWheelValue);
-    updateRenderFrequencyFromMidiInput();
 }
 
 // set the pitch bend position (normalized to a [-1, 1] float value)
 void WavetableSynthesizerVoice::setPitchBendPosition(int position)
 {
     if (position > 8192)
-        pitchBendWheelPosition = (float)(position - 8192.f) / (16383.f - 8192.f);
+        pitchBendWheelPosition = (float) (position - 8192.f) / (16383.f - 8192.f);
     else
-        pitchBendWheelPosition = (float)(8192.f - position) / -8192.f;
+        pitchBendWheelPosition = (float) (8192.f - position) / -8192.f;
 }
 
 // convert pitch bend wheel position to a note offset in cents based on wheel upper or lower bounds
