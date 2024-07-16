@@ -25,6 +25,28 @@ void generateSineWavetable(Wavetable& tableToFill, int resolution)
     }
 }
 
+void generateSquareWavetable(Wavetable& tableToFill, int resolution)
+{
+    tableToFill.setSize(1, resolution);
+    auto* samples = tableToFill.getWritePointer(0);
+
+    for (int i = 0; i < resolution; i++)
+    {
+        samples[i] = (i >= (resolution / 2)) ? -1.f : 1.f;
+    }
+}
+
+void generateSawWavetable(Wavetable& tableToFill, int resolution)
+{
+    tableToFill.setSize(1, resolution);
+    auto* samples = tableToFill.getWritePointer(0);
+
+    for (int i = 0; i < resolution; i++)
+    {
+        samples[i] = -1.f + (2.f * (float) i / (float) resolution);
+    }
+}
+
 //==============================================================================
 WavetableSynthAudioProcessor::WavetableSynthAudioProcessor() :
 oversamplingEngine(2, (size_t)std::log(oversampleCoefficient), juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR, true, false)
@@ -40,7 +62,7 @@ oversamplingEngine(2, (size_t)std::log(oversampleCoefficient), juce::dsp::Oversa
 #endif
 {
     Wavetable wavetable;
-    generateSineWavetable(wavetable, 256);
+    generateSawWavetable(wavetable, 512);
 
     synthesizer.clearVoices();
     synthesizer.addVoice(new WavetableSynthesizerVoice(wavetable));
