@@ -59,6 +59,9 @@ public:
 
 private:
 
+    const int oversampleCoefficient = 8;
+    juce::dsp::Oversampling<float> oversamplingEngine;
+
     WavetableSynthesizerVoice sineVoice;
     juce::Synthesiser synthesizer;
     

@@ -26,9 +26,10 @@ void generateSineWavetable(Wavetable& tableToFill, int resolution)
 }
 
 //==============================================================================
-WavetableSynthAudioProcessor::WavetableSynthAudioProcessor()
+WavetableSynthAudioProcessor::WavetableSynthAudioProcessor() :
+oversamplingEngine(2, (size_t)std::log(oversampleCoefficient), juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR, true, false)
 #ifndef JucePlugin_PreferredChannelConfigurations
-    : AudioProcessor (BusesProperties()
+    , AudioProcessor (BusesProperties()
     #if ! JucePlugin_IsMidiEffect
         #if ! JucePlugin_IsSynth
             .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
@@ -117,6 +118,7 @@ void WavetableSynthAudioProcessor::changeProgramName (int index, const juce::Str
 void WavetableSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     synthesizer.setCurrentPlaybackSampleRate(sampleRate);
+    oversamplingEngine.initProcessing(static_cast<size_t>(samplesPerBlock));
 }
 
 void WavetableSynthAudioProcessor::releaseResources()
@@ -146,13 +148,25 @@ bool WavetableSynthAudioProcessor::isBusesLayoutSupported (const BusesLayout& la
 void WavetableSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
+    
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    synthesizer.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+    juce::dsp::AudioBlock<float> block(buffer);
+    juce::dsp::AudioBlock<float> oversampledBlock = oversamplingEngine.processSamplesUp(block);
+    
+    setLatencySamples(oversamplingEngine.getLatencyInSamples());
+
+    float* channels[2] = { oversampledBlock.getChannelPointer(0), oversampledBlock.getChannelPointer(1) };
+    juce::AudioBuffer<float> oversampledBuffer{channels, 2, static_cast<int>(oversampledBlock.getNumSamples())};
+    
+    synthesizer.setCurrentPlaybackSampleRate(getSampleRate() * oversampleCoefficient);
+    synthesizer.renderNextBlock(oversampledBuffer, midiMessages, 0, oversampledBuffer.getNumSamples());
+    
+    oversamplingEngine.processSamplesDown(block);
 }
 
 //==============================================================================
