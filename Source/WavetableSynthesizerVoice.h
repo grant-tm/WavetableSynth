@@ -52,7 +52,7 @@ protected:
     // RENDER 
     float renderSampleRate;
     float renderFrequency;
-    float velocity;
+    float renderLevel;
 
     // WAVETABLE DESCRIPTION
     Wavetable wavetable;

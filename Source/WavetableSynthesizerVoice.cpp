@@ -19,7 +19,7 @@ WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice(
     phase = 0.f;
     sampleIndex = 0;
     sampleOffset = 0.f;
-    
+
     // initialize wheel control parameters
     pitchBendWheelPosition = 0.f;
     pitchBendUpperBoundSemitones = 2;
@@ -29,7 +29,7 @@ WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice(
 WavetableSynthesizerVoice::WavetableSynthesizerVoice(Wavetable& wavetableToUse) : WavetableSynthesizerVoice::WavetableSynthesizerVoice()
 {
     setWavetable(wavetableToUse);
-    }
+}
 
 WavetableSynthesizerVoice::~WavetableSynthesizerVoice()
 {
@@ -94,7 +94,7 @@ void WavetableSynthesizerVoice::updatePhase()
 float WavetableSynthesizerVoice::getNextSample()
 {
     // TODO: SIMD
-
+    
     // select 4 samples around sampleIndex
     float val0 = wavetable.getSample(0, (sampleIndex - 1 + wavetableSize) % wavetableSize);
     float val1 = wavetable.getSample(0, (sampleIndex + 0) % wavetableSize);
@@ -134,10 +134,10 @@ void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float>& output
     {
         float sampleValue = getNextSample() * renderLevel;
         for (int channel = 0; channel < outputBuffer.getNumChannels(); channel++)
-    {
+        {
             outputBuffer.setSample(channel, sampleIndex, sampleValue);
+        }
     }
-}
 }
 
 
@@ -191,7 +191,7 @@ void WavetableSynthesizerVoice::stopNote(float velocity, bool allowTailOff)
     {
         renderLevel = velocity;
         clearCurrentNote();
-}
+    }
 }
 
 //==============================================================================
