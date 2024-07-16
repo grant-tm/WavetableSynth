@@ -28,18 +28,36 @@ WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice(
 
 WavetableSynthesizerVoice::WavetableSynthesizerVoice(Wavetable& wavetableToUse) : WavetableSynthesizerVoice::WavetableSynthesizerVoice()
 {
-    if (wavetableToUse.getNumChannels() == 1 && wavetableToUse.getNumSamples() > 15)
-    {
-        wavetable = wavetableToUse;
-        wavetableSize = wavetable.getNumSamples();
+    setWavetable(wavetableToUse);
     }
-}
 
 WavetableSynthesizerVoice::~WavetableSynthesizerVoice()
 {
     wavetable.clear();
 }
 
+void WavetableSynthesizerVoice::setWavetable(Wavetable& wavetableToUse)
+{
+    // if wavetable is large enough, copy it and normalize it
+    if (wavetableToUse.getNumChannels() == 1 && wavetableToUse.getNumSamples() >= 16)
+    {
+        // copy wavetable
+        wavetable = wavetableToUse;
+        wavetableSize = wavetable.getNumSamples();
+
+        // get min and max values of wavetable
+        auto tableRange = wavetable.findMinMax(0, 0, wavetableSize);
+        auto min = tableRange.getStart();
+        auto max = tableRange.getEnd();
+
+        // normalize wavetable against max value
+        for (int sampleIndex = 0; sampleIndex < wavetableSize; ++sampleIndex)
+        {
+            auto sampleValue = (float)wavetable.getSample(0, sampleIndex) / max;
+            wavetable.setSample(0, sampleIndex, sampleValue);
+        }
+    }
+}
 
 //==============================================================================
 // RENDERING
