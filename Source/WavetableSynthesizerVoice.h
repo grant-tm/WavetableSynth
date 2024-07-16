@@ -32,8 +32,10 @@ public:
     float getNextSample();
 
     // UPDATE RENDER CONTEXT
-    void updateFrequency();
-    
+    void setRenderSampleRate(float);
+    void setRenderFrequency(float);
+    void updateRenderFrequencyFromMidiInput();
+   
     // NOTE ON OFF
     void startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound* sound, int pitchWheelPosition) override;
     void stopNote(float velocity, bool allowTailOff) override;
@@ -49,8 +51,9 @@ public:
 
 protected:
 
-    // RENDER CONTEXT
-    float frequency;
+    // RENDER 
+    float renderSampleRate;
+    float renderFrequency;
     float velocity;
 
     // WAVETABLE DESCRIPTION

@@ -16,7 +16,8 @@ WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice(
     sampleOffset = 0.f;
     
     // initialize render context
-    frequency = 0.f;
+    renderSampleRate = 0.f;
+    renderFrequency = 0.f;
     velocity = 0.f;
 
     // initialize wheel control parameters
@@ -53,8 +54,8 @@ bool WavetableSynthesizerVoice::canPlaySound(juce::SynthesiserSound* sound)
 // also updates frequency based on currently playing note and pitch wheel position
 void WavetableSynthesizerVoice::updateDeltaPhase()
 {
-    updateFrequency();
-    deltaPhase = (getSampleRate() > 0.f) ? (frequency / getSampleRate()) : 0.f;
+    updateRenderFrequencyFromMidiInput();
+    deltaPhase = (renderSampleRate > 0.f) ? (renderFrequency / renderSampleRate) : 0.f;
 }
 
 // update the phase and calculate sampleIndex and sampleOffset
@@ -68,8 +69,8 @@ void WavetableSynthesizerVoice::updatePhase()
 
     float scaledPhase = phase * wavetableSize;
 
-    sampleIndex = (int)scaledPhase;
-    sampleOffset = scaledPhase - (float)sampleIndex;
+    sampleIndex = (int) scaledPhase;
+    sampleOffset = scaledPhase - (float) sampleIndex;
 }
 
 // calculate a single float sample by interpolating around the current sampleIndex and sampleOffset
@@ -104,6 +105,7 @@ float WavetableSynthesizerVoice::getNextSample()
 // fill a buffer with samples using the wavetable
 void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples)
 {
+    setRenderSampleRate(getSampleRate());
     updateDeltaPhase();
 
     auto leftBuffer = outputBuffer.getWritePointer(0);
@@ -121,9 +123,36 @@ void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float>& output
 //==============================================================================
 // UPDATE RENDER CONTEXT
 
-void WavetableSynthesizerVoice::updateFrequency()
+void WavetableSynthesizerVoice::setRenderSampleRate(float newRenderSampleRate)
 {
-    frequency = getOffsetMidiNoteInHertz(getCurrentlyPlayingNote(), getPitchBendOffsetCents());
+    if (newRenderSampleRate >= 0.f)
+    {
+        renderSampleRate = newRenderSampleRate;
+    }
+    else
+    {
+        renderSampleRate = 0.f;
+    }
+
+}
+
+void WavetableSynthesizerVoice::setRenderFrequency(float newRenderFrequency)
+{
+    if (newRenderFrequency >= 0.f)
+    {
+        renderFrequency = newRenderFrequency;
+    }
+    else 
+    {
+        renderFrequency = 0.f;
+    }
+   
+}
+
+void WavetableSynthesizerVoice::updateRenderFrequencyFromMidiInput()
+{
+    auto newFrequency = getOffsetMidiNoteInHertz(getCurrentlyPlayingNote(), getPitchBendOffsetCents());
+    setRenderFrequency(newFrequency);
 }
 
 //==============================================================================
@@ -133,7 +162,7 @@ void WavetableSynthesizerVoice::startNote(int midiNoteNumber, float velocity,
     juce::SynthesiserSound* sound, int pitchWheelPosition)
 {
     setPitchBendPosition(pitchWheelPosition);
-    frequency = getOffsetMidiNoteInHertz(midiNoteNumber, getPitchBendOffsetCents());
+    updateRenderFrequencyFromMidiInput();
     this->velocity = velocity;
 }
 
@@ -150,7 +179,7 @@ void WavetableSynthesizerVoice::stopNote(float velocity, bool allowTailOff)
 void WavetableSynthesizerVoice::pitchWheelMoved(int newPitchWheelValue)
 {
     setPitchBendPosition(newPitchWheelValue);
-    frequency = getOffsetMidiNoteInHertz(getCurrentlyPlayingNote(), getPitchBendOffsetCents());
+    updateRenderFrequencyFromMidiInput();
 }
 
 // set the pitch bend position (normalized to a [-1, 1] float value)
