@@ -9,17 +9,17 @@ WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice(
     wavetable.clear();
     wavetableSize = 0;
 
-    // initialize wavetable positioning
-    phase = 0.f;
-    deltaPhase = 0.f;
-    sampleIndex = 0;
-    sampleOffset = 0.f;
-    
     // initialize render context
     renderSampleRate = 0.f;
     renderFrequency = 0.f;
-    velocity = 0.f;
+    renderLevel = 0.f;
 
+    // initialize wavetable positioning
+    updateDeltaPhase();
+    phase = 0.f;
+    sampleIndex = 0;
+    sampleOffset = 0.f;
+    
     // initialize wheel control parameters
     pitchBendWheelPosition = 0.f;
     pitchBendUpperBoundSemitones = 2;
