@@ -72,7 +72,6 @@ bool WavetableSynthesizerVoice::canPlaySound(juce::SynthesiserSound* sound)
 // also updates frequency based on currently playing note and pitch wheel position
 void WavetableSynthesizerVoice::updateDeltaPhase()
 {
-    updateRenderFrequencyFromMidiInput();
     deltaPhase = (renderSampleRate > 0.f) ? (renderFrequency / renderSampleRate) : 0.f;
 }
 
@@ -103,7 +102,7 @@ float WavetableSynthesizerVoice::getNextSample()
     float val3 = wavetable.getSample(0, (sampleIndex + 2) % wavetableSize);
 
     // calculate slopes to use at points val1 and val2 (avoid discontinuities)
-    float slope0 = (val2 - val1) * 0.5f;
+    float slope0 = (val2 - val0) * 0.5f;
     float slope1 = (val3 - val1) * 0.5f;
 
     // calculate interpolation coefficients
@@ -117,26 +116,30 @@ float WavetableSynthesizerVoice::getNextSample()
     float stage2 = stage1 * sampleOffset + slope0;
     float result = stage2 * sampleOffset + val1;
 
+    updatePhase();
+
     return result;
 }
 
 // fill a buffer with samples using the wavetable
 void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples)
 {
+    // update rendering parameters
+    updateRenderFrequencyFromMidiInput();
     setRenderSampleRate(getSampleRate());
     updateDeltaPhase();
 
-    auto leftBuffer = outputBuffer.getWritePointer(0);
-    auto rightBuffer = outputBuffer.getWritePointer(1);
-
-    for (int sample = startSample; sample < numSamples; ++sample)
+    // render a wave into the oversampled block
+    for (int sampleIndex = 0; sampleIndex < numSamples; ++sampleIndex)
     {
-        updatePhase();
-        auto currentSample = getNextSample();
-        leftBuffer[sample] = currentSample * velocity;
-        rightBuffer[sample] = currentSample * velocity;
+        float sampleValue = getNextSample() * renderLevel;
+        for (int channel = 0; channel < outputBuffer.getNumChannels(); channel++)
+    {
+            outputBuffer.setSample(channel, sampleIndex, sampleValue);
     }
 }
+}
+
 
 //==============================================================================
 // UPDATE RENDER CONTEXT
