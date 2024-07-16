@@ -20,9 +20,7 @@ public:
     WavetableSynthesizerVoice(Wavetable&);
     ~WavetableSynthesizerVoice();
 
-    void setWavetable(Wavetable& table) {
-        wavetable = table;
-    }
+    void setWavetable(Wavetable& wavetableToUse);
 
     // RENDERING
     void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
