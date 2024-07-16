@@ -15,6 +15,10 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="vOcgvg" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
+    <FILE id="dca57X" name="WavetableSynthesizerVoice.cpp" compile="1"
+          resource="0" file="Source/WavetableSynthesizerVoice.cpp"/>
+    <FILE id="u3IvLj" name="WavetableSynthesizerVoice.h" compile="0" resource="0"
+          file="Source/WavetableSynthesizerVoice.h"/>
   </MAINGROUP>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
