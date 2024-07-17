@@ -58,6 +58,11 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
+    // PUBLIC MEMBERS
+
+    static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    juce::AudioProcessorValueTreeState valueTree{ *this, nullptr, "Parameters", createParameterLayout() };
+
 private:
     const int oversampleCoefficient = 8;
     juce::dsp::Oversampling<float> oversamplingEngine;
