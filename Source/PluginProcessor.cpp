@@ -66,21 +66,15 @@ void generateMultiSineWavetable(Wavetable& tableToFill, int resolution, int coef
     for (int i = 0; i < resolution; ++i)
     {
         auto sample = std::sin(currentAngle);
-        samples[i] += (float)sample;
+        samples[i] *= (float)sample;
         currentAngle += coefficientA * angleDelta;
     }
 
     for (int i = 0; i < resolution; ++i)
     {
         auto sample = std::sin(currentAngle);
-        samples[i] += (float)sample;
+        samples[i] *= (float)sample;
         currentAngle += coefficientB * angleDelta;
-    }
-
-    for (int i = 0; i < resolution; ++i)
-    {
-        auto sample = std::sin(currentAngle);
-        samples[i] = samples[i] / 3;
     }
 }
 
