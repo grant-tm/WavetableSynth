@@ -79,7 +79,7 @@ void WavetableDisplayComponent::parameterValueChanged(int parameterIndex, float 
 void WavetableDisplayComponent::updateWavetable()
 {   
     int resolution = 128;
-    generateSineWavetable(wavetable, resolution);
+    generateMultiSineWavetable(wavetable, resolution, 2, 5);
 }
 
 //================================================================================================
@@ -97,40 +97,6 @@ void WavetableDisplayComponent::timerCallback()
 
 //================================================================================================
 // PATH PRODUERS
-
-
-//// calculate a single float sample by interpolating around the current sampleIndex and sampleOffset
-//float WavetableDisplayComponent::getInterpolatedWavetableSample(float phase)
-//{
-//    // get sample index and offset
-//    int wavetableSize = wavetable.getNumSamples();
-//    float scaledPhase = phase * wavetableSize;
-//    int sampleIndex = (int) scaledPhase;
-//    float sampleOffset = scaledPhase - (float) sampleIndex;
-//
-//    // select 4 samples around sampleIndex
-//    float val0 = wavetable.getSample(0, (sampleIndex - 1 + wavetableSize) % wavetableSize);
-//    float val1 = wavetable.getSample(0, (sampleIndex + 0) % wavetableSize);
-//    float val2 = wavetable.getSample(0, (sampleIndex + 1) % wavetableSize);
-//    float val3 = wavetable.getSample(0, (sampleIndex + 2) % wavetableSize);
-//
-//    // calculate slopes to use at points val1 and val2 (avoid discontinuities)
-//    float slope0 = (val2 - val0) * 0.5f;
-//    float slope1 = (val3 - val1) * 0.5f;
-//
-//    // calculate interpolation coefficients
-//    float delta = val1 - val2;
-//    float slopeSum = slope0 + delta;
-//    float coefficientA = slopeSum + delta + slope1;
-//    float coefficientB = slopeSum + coefficientA;
-//
-//    // perform interpolation
-//    float stage1 = coefficientA * sampleOffset - coefficientB;
-//    float stage2 = stage1 * sampleOffset + slope0;
-//    float result = stage2 * sampleOffset + val1;
-//
-//    return result;
-//}
 
 // calculate a single float sample by interpolating around the current sampleIndex and sampleOffset
 float WavetableDisplayComponent::getHermiteInterpolatedWavetableSample(float phase)
@@ -165,6 +131,7 @@ float WavetableDisplayComponent::getHermiteInterpolatedWavetableSample(float pha
     return result;
 }
 
+// calculate a single float sample by interpolating around the current sampleIndex and sampleOffset
 float WavetableDisplayComponent::getLinearlyInterpolatedWavetableSample(float phase)
 {
     // get sample index and offset
