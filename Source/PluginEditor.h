@@ -10,8 +10,11 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+
 #include "SynthesizerState.h"
+
 #include "Knob.h"
+#include "WavetableDisplay.h"
 
 enum ColorPalette
 {
@@ -47,6 +50,8 @@ private:
 
     Knob oscPanningKnob;
     KnobAttachment oscPanningKnobAttachment;
+
+    struct WavetableDisplayComponent wavetableDisplay;
 
     std::vector<juce::Component*> getKnobs();
 
