@@ -48,6 +48,42 @@ void generateSawWavetable(Wavetable& tableToFill, int resolution)
     }
 }
 
+void generateMultiSineWavetable(Wavetable& tableToFill, int resolution, int coefficientA, int coefficientB)
+{
+    tableToFill.setSize(1, resolution);
+    auto* samples = tableToFill.getWritePointer(0);
+
+    auto angleDelta = juce::MathConstants<float>::twoPi / (float)(resolution - 1);
+    auto currentAngle = 0.0;
+
+    for (int i = 0; i < resolution; ++i)
+    {
+        auto sample = std::sin(currentAngle);
+        samples[i] = (float)sample;
+        currentAngle += angleDelta;
+    }
+
+    for (int i = 0; i < resolution; ++i)
+    {
+        auto sample = std::sin(currentAngle);
+        samples[i] += (float)sample;
+        currentAngle += coefficientA * angleDelta;
+    }
+
+    for (int i = 0; i < resolution; ++i)
+    {
+        auto sample = std::sin(currentAngle);
+        samples[i] += (float)sample;
+        currentAngle += coefficientB * angleDelta;
+    }
+
+    for (int i = 0; i < resolution; ++i)
+    {
+        auto sample = std::sin(currentAngle);
+        samples[i] = samples[i] / 3;
+    }
+}
+
 //==============================================================================
 WavetableSynthAudioProcessor::WavetableSynthAudioProcessor() :
 oversamplingEngine(2, (size_t)std::log(oversampleCoefficient), juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR, true, false)
