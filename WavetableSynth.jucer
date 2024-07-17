@@ -4,9 +4,19 @@
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginVST3Category="Synth"
               pluginVSTCategory="kPlugCategSynth" pluginAUMainType="'augn'"
               cppLanguageStandard="17" pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
-              pluginFormats="buildVST3">
+              pluginFormats="buildStandalone,buildVST3">
   <MAINGROUP id="mUcVvk" name="WavetableSynth">
     <GROUP id="{142DF1E7-718A-1031-2A13-D414D869B7E9}" name="Source">
+      <FILE id="wSmkBc" name="Knob.cpp" compile="1" resource="0" file="Source/Knob.cpp"/>
+      <FILE id="X0Np73" name="Knob.h" compile="0" resource="0" file="Source/Knob.h"/>
+      <FILE id="oESRQx" name="SynthesizerState.cpp" compile="1" resource="0"
+            file="Source/SynthesizerState.cpp"/>
+      <FILE id="JudFXp" name="SynthesizerState.h" compile="0" resource="0"
+            file="Source/SynthesizerState.h"/>
+      <FILE id="u3IvLj" name="WavetableSynthesizerVoice.h" compile="0" resource="0"
+            file="Source/WavetableSynthesizerVoice.h"/>
+      <FILE id="dca57X" name="WavetableSynthesizerVoice.cpp" compile="1"
+            resource="0" file="Source/WavetableSynthesizerVoice.cpp"/>
       <FILE id="qMYAla" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="kvcGzq" name="PluginProcessor.h" compile="0" resource="0"
@@ -15,10 +25,6 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="vOcgvg" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
-    <FILE id="dca57X" name="WavetableSynthesizerVoice.cpp" compile="1"
-          resource="0" file="Source/WavetableSynthesizerVoice.cpp"/>
-    <FILE id="u3IvLj" name="WavetableSynthesizerVoice.h" compile="0" resource="0"
-          file="Source/WavetableSynthesizerVoice.h"/>
   </MAINGROUP>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
