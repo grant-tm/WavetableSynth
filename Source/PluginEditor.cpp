@@ -57,20 +57,20 @@ void WavetableSynthAudioProcessorEditor::resized()
     bounds.removeFromRight(5);
 
     // WAVETABLE DISPLAY AREA
-    auto wavetableDisplayArea = bounds.removeFromLeft(250);
+    auto wavetableDisplayArea = bounds.removeFromRight(250);
     wavetableDisplayArea = wavetableDisplayArea.removeFromTop(250);
     wavetableDisplay.setBounds(wavetableDisplayArea);
 
     // OSC VOLUME AND PANNING
     auto oscMixingKnobArea = bounds;
-    oscMixingKnobArea.removeFromRight(oscMixingKnobArea.getWidth() * 0.5f);
-    oscMixingKnobArea.removeFromBottom(oscMixingKnobArea.getHeight() * 0.5f);
+    oscMixingKnobArea.removeFromRight(oscMixingKnobArea.getWidth() * 0.25f);
+    oscMixingKnobArea.removeFromBottom(oscMixingKnobArea.getHeight() * 0.25f);
     
-        auto oscVolumeKnobArea = oscMixingKnobArea.removeFromTop(oscMixingKnobArea.getHeight() * 0.5f);
-        oscVolumeKnob.setBounds(oscVolumeKnobArea);
+    auto oscVolumeKnobArea = oscMixingKnobArea.removeFromTop(100);
+    oscVolumeKnob.setBounds(oscVolumeKnobArea);
 
-        auto oscPanningKnobArea = oscMixingKnobArea;
-        oscPanningKnob.setBounds(oscPanningKnobArea);
+    auto oscPanningKnobArea = oscMixingKnobArea.removeFromTop(100);
+    oscPanningKnob.setBounds(oscPanningKnobArea);
 }
 
 std::vector<juce::Component*> WavetableSynthAudioProcessorEditor::getKnobs()
