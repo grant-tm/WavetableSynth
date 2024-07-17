@@ -208,12 +208,37 @@ void WavetableSynthAudioProcessor::getStateInformation (juce::MemoryBlock& destD
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+    juce::MemoryOutputStream stateOutputStream(destData, true);
+    valueTree.state.writeToStream(stateOutputStream);
 }
 
 void WavetableSynthAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+    auto tree = juce::ValueTree::readFromData(data, sizeInBytes);
+    if (tree.isValid())
+    {
+        valueTree.replaceState(tree);
+    }
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout WavetableSynthAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    //----------------------------------
+    // OSC PARAMETERS
+
+    // osc volume
+    auto oscVolumeRange = juce::NormalisableRange<float>(0.f, 100.f, 1.f, 1.f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_VOLUME", "OSC_VOLUME", oscVolumeRange, 0.75f));
+
+    // osc panning
+    auto oscPanningRange = juce::NormalisableRange<float>(-50.f, 50.f, 1.f, 1.f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_PANNING", "OSC_PANNING", oscVolumeRange, 0.f));
+
+    return layout;
 }
 
 //==============================================================================

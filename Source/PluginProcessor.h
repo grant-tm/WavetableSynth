@@ -57,15 +57,14 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    //==============================================================================
 private:
-
     const int oversampleCoefficient = 8;
     juce::dsp::Oversampling<float> oversamplingEngine;
 
     WavetableSynthesizerVoice sineVoice;
     juce::Synthesiser synthesizer;
     
-
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WavetableSynthAudioProcessor)
 };
