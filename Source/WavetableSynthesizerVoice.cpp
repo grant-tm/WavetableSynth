@@ -189,9 +189,9 @@ void WavetableSynthesizerVoice::stopNote(float velocity, bool allowTailOff)
 {
     if (velocity == 0)
     {
-        renderLevel = velocity;
         clearCurrentNote();
     }
+    renderLevel = velocity;
 }
 
 //==============================================================================
