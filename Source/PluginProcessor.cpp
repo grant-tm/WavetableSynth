@@ -9,6 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+
 void generateSineWavetable(Wavetable& tableToFill, int resolution)
 {
     tableToFill.setSize(1, resolution);
@@ -43,7 +44,7 @@ void generateSawWavetable(Wavetable& tableToFill, int resolution)
 
     for (int i = 0; i < resolution; i++)
     {
-        samples[i] = -1.f + (2.f * (float) i / (float) resolution);
+        samples[i] = -1.f + (2.f * (float)i / (float)resolution);
     }
 }
 

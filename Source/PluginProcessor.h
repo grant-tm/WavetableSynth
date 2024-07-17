@@ -11,10 +11,15 @@
 #include <JuceHeader.h>
 #include "WavetableSynthesizerVoice.h"
 
-class SynthesizerVoice : public juce::SynthesiserVoice
-{
+#define BODY_COLOR_HEX              0xFF64BEA5
+#define BORDER_COLOR_HEX            0xFF0F1D1F
+#define SCREEN_MAIN_COLOR_HEX       0xFFD7FFEB
+#define SCREEN_SHADOW_COLOR_HEX     0xFFB1E7CC
+#define CONTROL_SURFACE_COLOR_HEX   0xFF528187
 
-};
+void generateSineWavetable(Wavetable& tableToFill, int resolution);
+void generateSquareWavetable(Wavetable& tableToFill, int resolution);
+void generateSawWavetable(Wavetable& tableToFill, int resolution);
 
 //==============================================================================
 class WavetableSynthAudioProcessor  : public juce::AudioProcessor
@@ -58,7 +63,6 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    // PUBLIC MEMBERS
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState valueTree{ *this, nullptr, "Parameters", createParameterLayout() };
