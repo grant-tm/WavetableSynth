@@ -10,12 +10,27 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor (WavetableSynthAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(WavetableSynthAudioProcessor& p)
+    : AudioProcessorEditor(&p), audioProcessor(p),
+    
+    oscVolumeKnob(*audioProcessor.valueTree.getParameter("OSC_VOLUME"), "%"),
+    oscVolumeKnobAttachment(audioProcessor.valueTree, "OSC_VOLUME", oscVolumeKnob),
+    
+    oscPanningKnob(*audioProcessor.valueTree.getParameter("OSC_PANNING"), "%"),
+    oscPanningKnobAttachment(audioProcessor.valueTree, "OSC_PANNING", oscPanningKnob)
+
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    oscVolumeKnob.labels.add({ 0.f, "" });
+    oscVolumeKnob.labels.add({ 100.f, "" });
+
+    oscPanningKnob.labels.add({ -50.f, "" });
+    oscPanningKnob.labels.add({ 50.f, "" });
+
+    for (auto* knob : getKnobs())
+    {
+        addAndMakeVisible(knob);
+    }
+    setSize (400, 460);
 }
 
 WavetableSynthAudioProcessorEditor::~WavetableSynthAudioProcessorEditor()
@@ -25,16 +40,27 @@ WavetableSynthAudioProcessorEditor::~WavetableSynthAudioProcessorEditor()
 //==============================================================================
 void WavetableSynthAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (15.0f));
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+    g.fillAll (juce::Colour(ColorPalette::body));
 }
 
 void WavetableSynthAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+    auto bounds = getLocalBounds();
+    bounds.removeFromTop(5);
+    bounds.removeFromBottom(5);
+    bounds.removeFromLeft(5);
+    bounds.removeFromRight(5);
+
+    auto oscMixingKnobArea = bounds.removeFromRight(bounds.getWidth() * 0.25f);
+    oscVolumeKnob.setBounds(oscMixingKnobArea.removeFromTop(int(oscMixingKnobArea.getHeight() * 0.5f)));
+    oscPanningKnob.setBounds(oscMixingKnobArea);
+}
+
+std::vector<juce::Component*> WavetableSynthAudioProcessorEditor::getKnobs()
+{
+    return
+    {
+        &oscVolumeKnob,
+        &oscPanningKnob
+    };
 }
