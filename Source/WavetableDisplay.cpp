@@ -78,8 +78,9 @@ void WavetableDisplayComponent::parameterValueChanged(int parameterIndex, float 
 
 void WavetableDisplayComponent::updateWavetable()
 {   
-    int resolution = 128;
-    generateMultiSineWavetable(wavetable, resolution, 2, 5);
+    int resolution = 512;
+    //generateMultiSineWavetable(wavetable, resolution, 2, 5);
+    generateSawWavetable(wavetable, resolution);
 }
 
 //================================================================================================
