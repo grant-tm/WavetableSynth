@@ -72,6 +72,8 @@ void WavetableSynthAudioProcessorEditor::resized()
 
     // detune mix
     auto oscDetuneMixKnobArea = oscMixingKnobArea.removeFromTop(SMALL_KNOB_DIAMETER_PIXELS + 15);
+    oscDetuneMixKnobArea.removeFromRight(12);
+    oscDetuneMixKnobArea.removeFromLeft(12);
     oscDetuneMixKnob.setBounds(oscDetuneMixKnobArea);
 
     // RIGHT HAND KNOBS
@@ -79,6 +81,8 @@ void WavetableSynthAudioProcessorEditor::resized()
     oscMorphKnobArea.removeFromTop((LARGE_KNOB_DIAMETER_PIXELS * 2) + (2 * 15));
 
     auto oscWarpAmountKnobArea = oscMorphKnobArea.removeFromTop(SMALL_KNOB_DIAMETER_PIXELS + 15);
+    oscWarpAmountKnobArea.removeFromRight(12);
+    oscWarpAmountKnobArea.removeFromLeft(12);
     oscWarpAmountKnob.setBounds(oscWarpAmountKnobArea);
 }
 
