@@ -141,7 +141,7 @@ juce::Rectangle<int> Knob::getSliderBounds() const
 {
     auto bounds = getLocalBounds();
     auto size = juce::jmin(bounds.getWidth(), bounds.getHeight());
-    size -= getTextHeight() * 2;
+    size -= getTextHeight();
 
     juce::Rectangle<int> r;
     r.setSize(size, size);
