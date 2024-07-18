@@ -21,26 +21,19 @@ struct KnobLookAndFeel : juce::LookAndFeel_V4
 
 struct Knob : juce::Slider
 {
-    Knob(juce::RangedAudioParameter& rangedAudioParameter, const juce::String& unitSuffix);
+    Knob(juce::RangedAudioParameter& rangedAudioParameter, const juce::String& label);
     ~Knob();
-
-    struct Knob::labelPosition
-    {
-        float position;
-        juce::String label;
-    };
-    juce::Array<labelPosition> labels;
 
     void paint(juce::Graphics& g) override;
     
     juce::Rectangle<int> getSliderBounds() const;
-    int getTextHeight() const { return 14; }
-    juce::String getDisplayString() const;
+    
+    int getTextHeight() const { return 18; }
 
 private:
-    KnobLookAndFeel lookAndFeel;
-    juce::RangedAudioParameter* param;
-    juce::String suffix;
+    KnobLookAndFeel knobLookAndFeel;
+    juce::RangedAudioParameter* knobParameter;
+    juce::String knobLabel;
 };
 
 #endif // KNOB_H
