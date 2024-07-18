@@ -34,7 +34,7 @@ WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(Wavetable
         addAndMakeVisible(knob);
     }
 
-    setSize (400, 460);
+    setSize (VST_WIDTH_PIXELS, VST_HEIGHT_PIXELS);
 }
 
 WavetableSynthAudioProcessorEditor::~WavetableSynthAudioProcessorEditor()
@@ -51,25 +51,22 @@ void WavetableSynthAudioProcessorEditor::resized()
 {
     // GET BOUNDS
     auto bounds = getLocalBounds();
-    bounds.removeFromTop(5);
-    bounds.removeFromBottom(5);
-    bounds.removeFromLeft(5);
-    bounds.removeFromRight(5);
+    auto topButtonArea = bounds.removeFromTop(TOP_BAR_HEIGHT_PIXELS);
+    auto leftControlArea = bounds.removeFromLeft((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
+    auto rightControlArea = bounds.removeFromRight((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
 
     // WAVETABLE DISPLAY AREA
-    auto wavetableDisplayArea = bounds.removeFromRight(250);
-    wavetableDisplayArea = wavetableDisplayArea.removeFromTop(250);
+    auto wavetableDisplayArea = bounds;
+    wavetableDisplayArea = wavetableDisplayArea.removeFromTop(WAVETABLE_DISPLAY_HEIGHT_PIXELS);
     wavetableDisplay.setBounds(wavetableDisplayArea);
 
     // OSC VOLUME AND PANNING
-    auto oscMixingKnobArea = bounds;
-    oscMixingKnobArea.removeFromRight(oscMixingKnobArea.getWidth() * 0.25f);
-    oscMixingKnobArea.removeFromBottom(oscMixingKnobArea.getHeight() * 0.25f);
+    auto oscMixingKnobArea = leftControlArea;
     
-    auto oscVolumeKnobArea = oscMixingKnobArea.removeFromTop(100);
+    auto oscVolumeKnobArea = oscMixingKnobArea.removeFromTop(oscMixingKnobArea.getWidth() * 1.1f);
     oscVolumeKnob.setBounds(oscVolumeKnobArea);
 
-    auto oscPanningKnobArea = oscMixingKnobArea.removeFromTop(100);
+    auto oscPanningKnobArea = oscMixingKnobArea.removeFromTop(oscVolumeKnobArea.getHeight());
     oscPanningKnob.setBounds(oscPanningKnobArea);
 }
 

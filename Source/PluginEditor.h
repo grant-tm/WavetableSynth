@@ -25,6 +25,17 @@ enum ColorPalette
     controlSurface = 0xFF528187
 };
 
+#define VST_WIDTH_PIXELS 500
+#define VST_HEIGHT_PIXELS 450
+
+#define TOP_BAR_HEIGHT_PIXELS 60
+
+#define WAVETABLE_DISPLAY_WIDTH_PIXELS 305
+#define WAVETABLE_DISPLAY_HEIGHT_PIXELS 245
+
+#define LARGE_KNOB_DIAMETER_PIXELS 80
+#define SMALL_KNOB_DIAMETER_PIXELS 60
+
 //==============================================================================
 /**
 */
