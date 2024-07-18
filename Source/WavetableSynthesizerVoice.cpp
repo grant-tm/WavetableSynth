@@ -129,6 +129,13 @@ void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float>& output
     setRenderSampleRate(getSampleRate());
     updateDeltaPhase();
 
+    if (renderSampleRate == 0.f || renderFrequency < 15.f || renderLevel == 0)
+    {
+        outputBuffer.clear(0, startSample, numSamples);
+        outputBuffer.clear(1, startSample, numSamples);
+        return;
+    }
+
     // render a wave into the oversampled block
     for (int sampleIndex = 0; sampleIndex < numSamples; ++sampleIndex)
     {
