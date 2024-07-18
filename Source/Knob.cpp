@@ -11,60 +11,65 @@ enum KnobColors
 // KNOB LOOK AND FEEL
 
 void KnobLookAndFeel::drawRotarySlider(
-    juce::Graphics& g,
+    juce::Graphics &g,
     int x, int y, int width, int height,
     float sliderPosProportional,
     float rotaryStartAngle,
     float rotaryEndAngle,
-    juce::Slider& slider
+    juce::Slider &slider
 ) {
     using namespace juce;
 
+    if (auto *knob = dynamic_cast<Knob *>(&slider)) {
+
     auto bounds = Rectangle<float>(float(x), float(y), float(width), float(height));
+        auto knobBounds = bounds.removeFromTop(bounds.getWidth());
+        knobBounds.removeFromTop(width * 0.04f);
+        knobBounds.removeFromBottom(width * 0.04f);
+        knobBounds.removeFromLeft(width * 0.04f);
+        knobBounds.removeFromRight(width * 0.04f);
+
+        //---------------------------------------------------------------------
+        // DRAW KNOB BODY
 
     // draw knob background
     g.setColour(Colour(KnobColors::fillColor));
-    g.fillEllipse(bounds);
+        g.fillEllipse(knobBounds);
 
     // draw knob border
     g.setColour(Colour(KnobColors::borderColor));
-    g.drawEllipse(bounds, 4.5f);
+        g.drawEllipse(knobBounds, 5.f);
 
-    if (auto* knob = dynamic_cast<Knob*>(&slider))
-    {
-        // draw knob position notch
-        jassert(rotaryStartAngle < rotaryEndAngle);
+        //---------------------------------------------------------------------
+        // DRAW KNOB THUMB
+
+        // parameters to mess with
+        const float thumbWidthProportionalToDiameter = 0.1f;
+        const float thumbLengthProportionalToRadius = 0.66f;
+
+        const auto knobCenter = knobBounds.getCentre();
+        const auto knobDiameter = knobBounds.getWidth();
+        const auto knobRadius = knobDiameter / 2;
+
+        const auto thumbWidth = knobDiameter * thumbWidthProportionalToDiameter;
+        const auto thumbX = knobCenter.getX() - (thumbWidth / 2);
+        const auto thumbY = knobRadius * thumbLengthProportionalToRadius;
+        const auto thumbHeight = knobBounds.getY() - thumbY;
+
+        // create path according to knob position and dimensions
+        Path thumbPath;
+        thumbPath.addRoundedRectangle(thumbX, thumbY, thumbWidth, thumbHeight, 2.5f);
+
         auto sliderAngRad = jmap(sliderPosProportional, 0.f, 1.f, rotaryStartAngle, rotaryEndAngle);
+        thumbPath.applyTransform(AffineTransform().rotated(sliderAngRad, knobCenter.getX(), knobCenter.getY()));
 
-        auto center = bounds.getCentre();
-        Rectangle<float> r;
-        r.setLeft(center.getX() - 3);
-        r.setRight(center.getX() + 3);
-        r.setTop(bounds.getY());
-        r.setBottom((center.getY() - bounds.getY()) * 0.66f);
-
-        Path p;
-        p.addRoundedRectangle(r, 3.f);
-        p.applyTransform(AffineTransform().rotated(sliderAngRad, center.getX(), center.getY()));
-
+        // draw thumb as rounded rectangle
         g.setColour(Colour(KnobColors::borderColor));
-        g.fillPath(p);
-
-        //// draw label
-        //g.setFont(float(knob->getTextHeight()));
-        //auto text = juce::String("TEST");
-        //auto strWidth = g.getCurrentFont().getStringWidth(text);
-
-        //r.setSize(float(strWidth + 4), float(knob->getTextHeight() + 2));
-        //r.setCentre(bounds.getCentre());
-        //g.setColour(Colour(KnobColors::fillColor));
-        //g.fillRect(r);
-
-        //g.setColour(Colour(KnobColors::textColor));
-        //g.drawFittedText(text, r.toNearestInt(), juce::Justification::centred, 1);
+        g.fillPath(thumbPath);
     }
 }
 
+ 
 //====================================================================
 // KNOB
 
