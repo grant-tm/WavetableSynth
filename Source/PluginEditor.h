@@ -33,8 +33,8 @@ enum ColorPalette
 #define WAVETABLE_DISPLAY_WIDTH_PIXELS 305
 #define WAVETABLE_DISPLAY_HEIGHT_PIXELS 245
 
-#define LARGE_KNOB_DIAMETER_PIXELS 80
-#define SMALL_KNOB_DIAMETER_PIXELS 60
+#define LARGE_KNOB_DIAMETER_PIXELS 100
+#define SMALL_KNOB_DIAMETER_PIXELS 80
 
 //==============================================================================
 /**
@@ -61,6 +61,12 @@ private:
 
     Knob oscPanningKnob;
     KnobAttachment oscPanningKnobAttachment;
+
+    Knob oscDetuneMixKnob;
+    KnobAttachment oscDetuneMixKnobAttachment;
+    
+    Knob oscWarpAmountKnob;
+    KnobAttachment oscWarpAmountKnobAttachment;
 
     struct WavetableDisplayComponent wavetableDisplay;
 
