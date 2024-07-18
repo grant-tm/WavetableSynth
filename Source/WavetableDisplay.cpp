@@ -49,7 +49,7 @@ void WavetableDisplayComponent::paint(juce::Graphics& g)
     // draw 0 line
     Path lineLevel = createLineLevelPath();
     g.setColour(Colour(0xFF97C6AE));
-    g.strokePath(lineLevel, PathStrokeType(3.f));
+    g.strokePath(lineLevel, PathStrokeType(1.5f));
     
     // draw line
     g.setColour(Colour(BORDER_COLOR_HEX));
