@@ -7,11 +7,6 @@
 
 using Wavetable = juce::AudioBuffer<float>;
 
-class WavetableSynthesizerSound : public juce::SynthesiserSound
-{
-    bool appliesToNote(int)    override { return true; }
-    bool appliesToChannel(int) override { return true; }
-};
 
 class WavetableSynthesizerVoice : public juce::SynthesiserVoice
 {
@@ -34,6 +29,7 @@ public:
     // UPDATE RENDER CONTEXT
     void setRenderSampleRate(float);
     void setRenderFrequency(float);
+    void setRenderLevel(float);
     void updateRenderFrequencyFromMidiInput();
    
     // NOTE ON OFF
@@ -55,6 +51,7 @@ protected:
     float renderSampleRate;
     float renderFrequency;
     float renderLevel;
+    float noteVelocity;
 
     // WAVETABLE DESCRIPTION
     Wavetable wavetable;

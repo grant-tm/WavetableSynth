@@ -9,7 +9,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-
 void generateSineWavetable(Wavetable& tableToFill, int resolution)
 {
     tableToFill.setSize(1, resolution);
