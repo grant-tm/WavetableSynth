@@ -28,12 +28,9 @@ public:
 
     // UPDATE RENDER CONTEXT
     void setRenderSampleRate(float);
-    
     void setRenderFrequency(float);
     void updateRenderFrequencyFromMidiInput();
-
     void setRenderLevel(float);
-    
     void setRenderPan(float);
     void calculatePanningCoefficients(float);
    
@@ -55,12 +52,9 @@ protected:
     // RENDER 
     float renderSampleRate;
     float renderFrequency;
-    
     float renderLevel;
-
-    float renderLevelLeft;
-    float renderLevelRight;
-
+    float renderPanCoefficientLeft;
+    float renderPanCoefficientRight;
     float noteVelocity;
 
     // WAVETABLE DESCRIPTION
