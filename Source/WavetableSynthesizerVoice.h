@@ -3,6 +3,8 @@
 
 #include <JuceHeader.h>
 
+#include "WavetableSynthesizerSound.h"
+
 using Wavetable = juce::AudioBuffer<float>;
 
 class WavetableSynthesizerSound : public juce::SynthesiserSound

@@ -12,6 +12,7 @@
 
 #include "WavetableSynthesizer.h"
 #include "WavetableSynthesizerVoice.h"
+#include "WavetableSynthesizerSound.h"
 
 #define BODY_COLOR_HEX              0xFF64BEA5
 #define BORDER_COLOR_HEX            0xFF0F1D1F
