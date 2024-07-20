@@ -68,6 +68,9 @@ private:
     Knob oscWarpAmountKnob;
     KnobAttachment oscWarpAmountKnobAttachment;
 
+    Knob oscWavetablePositionKnob;
+    KnobAttachment oscWavetablePositionKnobAttachment;
+
     struct WavetableDisplayComponent wavetableDisplay;
 
     std::vector<juce::Component*> getKnobs();

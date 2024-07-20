@@ -277,6 +277,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout WavetableSynthAudioProcessor
     auto oscWarpAmountRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f);
     layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_WARP_AMOUNT", "OSC_WARP_AMOUNT", oscWarpAmountRange, 0.f));
 
+    // osc wavetable position
+    auto oscWavetablePositionRange = juce::NormalisableRange<float>(0.f, 255.f, 1.f, 1.f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_WAVETABLE_POSITION", "OSC_WAVETABLE_POSITION", oscWavetablePositionRange, 0.f));
+
     return layout;
 }
 

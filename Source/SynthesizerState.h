@@ -13,6 +13,10 @@ struct SynthesizerState
     float oscVolume{ 0.f };
     float oscPanning{ 0.f };
 
+    float oscDetuneMix{0.f};
+    float oscWarpAmount{0.f};
+
+    float oscWavetablePosition{0.f};
 };
 
 SynthesizerState getSynthesizerStateFromValueTree(juce::AudioProcessorValueTreeState& valueTree);
