@@ -95,6 +95,8 @@ oversamplingEngine(2, (size_t)std::log(oversampleCoefficient), juce::dsp::Oversa
     Wavetable wavetable;
     generateSawWavetable(wavetable, 512);
 
+    synthesizer.stateValueTree = &valueTree;
+
     synthesizer.clearVoices();
     synthesizer.addVoice(new WavetableSynthesizerVoice(wavetable));
 
@@ -216,6 +218,9 @@ void WavetableSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     float* channels[2] = { oversampledBlock.getChannelPointer(0), oversampledBlock.getChannelPointer(1) };
     juce::AudioBuffer<float> oversampledBuffer{channels, 2, static_cast<int>(oversampledBlock.getNumSamples())};
     
+    auto voice = dynamic_cast<WavetableSynthesizerVoice *>(synthesizer.getVoice(0));
+    voice->setRenderLevel(synthesizer.stateValueTree->getRawParameterValue("OSC_VOLUME")->load());
+
     synthesizer.setCurrentPlaybackSampleRate(getSampleRate() * oversampleCoefficient);
     synthesizer.renderNextBlock(oversampledBuffer, midiMessages, 0, oversampledBuffer.getNumSamples());
     
@@ -262,11 +267,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout WavetableSynthAudioProcessor
     // OSC PARAMETERS
 
     // osc volume
-    auto oscVolumeRange = juce::NormalisableRange<float>(0.f, 100.f, 1.f, 1.f);
+    auto oscVolumeRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f);
     layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_VOLUME", "OSC_VOLUME", oscVolumeRange, 0.75f));
 
     // osc panning
-    auto oscPanningRange = juce::NormalisableRange<float>(-50.f, 50.f, 1.f, 1.f);
+    auto oscPanningRange = juce::NormalisableRange<float>(-1.f, 1.f, .02f, 1.f);
     layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_PANNING", "OSC_PANNING", oscVolumeRange, 0.f));
 
     // osc detune mix

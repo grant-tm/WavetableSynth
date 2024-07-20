@@ -9,6 +9,8 @@
 #pragma once
 
 #include <JuceHeader.h>
+
+#include "WavetableSynthesizer.h"
 #include "WavetableSynthesizerVoice.h"
 
 #define BODY_COLOR_HEX              0xFF64BEA5
@@ -73,7 +75,7 @@ private:
     juce::dsp::Oversampling<float> oversamplingEngine;
 
     WavetableSynthesizerVoice sineVoice;
-    juce::Synthesiser synthesizer;
+    WavetableSynthesizer synthesizer;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WavetableSynthAudioProcessor)
