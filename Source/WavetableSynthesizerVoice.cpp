@@ -14,6 +14,9 @@ WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice(
     renderFrequency = 0.f;
     renderLevel = 0.f;
     noteVelocity = 0.f;
+    renderLevelLeft = 0.f;
+    renderLevelRight = 0.f;
+
 
     // initialize wavetable positioning
     updateDeltaPhase();
@@ -141,13 +144,26 @@ void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float>& output
     for (int sampleIndex = 0; sampleIndex < numSamples; ++sampleIndex)
     {
         float sampleValue = getNextSample() * renderLevel * noteVelocity;
-        for (int channel = 0; channel < outputBuffer.getNumChannels(); channel++)
+        outputBuffer.setSample(0, sampleIndex, sampleValue * renderLevelLeft);
+        outputBuffer.setSample(1, sampleIndex, sampleValue * renderLevelRight);
+
+        /*for (int channel = 0; channel < outputBuffer.getNumChannels(); channel++)
         {
+            float pannedSample = sampleValue *
             outputBuffer.setSample(channel, sampleIndex, sampleValue);
-        }
+        }*/
     }
 }
 
+void WavetableSynthesizerVoice::calculatePanningCoefficients(float pan) {
+    // Clamp the pan value to the range [-1, 1]
+    if (pan < -1.f) pan = -1.f;
+    if (pan > 1.f) pan = 1.f;
+
+    // Calculate the coefficients
+    renderLevelLeft = std::cos((juce::MathConstants<float>::pi / 4.0f) * (1.0f + pan));
+    renderLevelRight = std::sin((juce::MathConstants<float>::pi / 4.0f) * (1.0f + pan));
+}
 
 //==============================================================================
 // UPDATE RENDER CONTEXT
@@ -188,6 +204,21 @@ void WavetableSynthesizerVoice::setRenderLevel(float newRenderLevel)
     }
     else {
         renderLevel = newRenderLevel;
+    }
+}
+
+void WavetableSynthesizerVoice::setRenderPan(float newPan)
+{
+    if (newPan < -1.f)
+    {
+        calculatePanningCoefficients(-1.f);
+    }
+    else if (newPan >= 1.f)
+    {
+        calculatePanningCoefficients(1.f);
+    }
+    else {
+        calculatePanningCoefficients(newPan);
     }
 }
 
