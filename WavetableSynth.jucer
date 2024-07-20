@@ -16,10 +16,18 @@
               file="Source/WavetableDisplay.h"/>
       </GROUP>
       <GROUP id="{3D81EED1-24E2-FF25-246A-6DCA3E341B3D}" name="Synthesizer">
+        <FILE id="tLY8s1" name="WavetableSynthesizerSound.cpp" compile="1"
+              resource="0" file="Source/WavetableSynthesizerSound.cpp"/>
+        <FILE id="UZr7gJ" name="WavetableSynthesizerSound.h" compile="0" resource="0"
+              file="Source/WavetableSynthesizerSound.h"/>
         <FILE id="oESRQx" name="SynthesizerState.cpp" compile="1" resource="0"
               file="Source/SynthesizerState.cpp"/>
+        <FILE id="nbg0Qi" name="WavetableSynthesizer.cpp" compile="1" resource="0"
+              file="Source/WavetableSynthesizer.cpp"/>
         <FILE id="JudFXp" name="SynthesizerState.h" compile="0" resource="0"
               file="Source/SynthesizerState.h"/>
+        <FILE id="AJ71PY" name="WavetableSynthesizer.h" compile="0" resource="0"
+              file="Source/WavetableSynthesizer.h"/>
         <FILE id="u3IvLj" name="WavetableSynthesizerVoice.h" compile="0" resource="0"
               file="Source/WavetableSynthesizerVoice.h"/>
         <FILE id="dca57X" name="WavetableSynthesizerVoice.cpp" compile="1"
