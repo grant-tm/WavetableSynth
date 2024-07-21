@@ -93,11 +93,12 @@ oversamplingEngine(2, (size_t)std::log(oversampleCoefficient), juce::dsp::Oversa
 {
     Wavetable wavetable;
     generateSawWavetable(wavetable, 512);
+    synthesizer.setWavetable(wavetable);
 
     synthesizer.stateValueTree = &valueTree;
 
     synthesizer.clearVoices();
-    synthesizer.addVoice(new WavetableSynthesizerVoice(wavetable));
+    synthesizer.addVoice(new WavetableSynthesizerVoice(synthesizer.getWavetableReadPointer()));
 
     synthesizer.clearSounds();
     synthesizer.addSound(new WavetableSynthesizerSound());
