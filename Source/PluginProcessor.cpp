@@ -25,6 +25,45 @@ void generateSineWavetable(Wavetable& tableToFill, int resolution)
     }
 }
 
+void generateSineFrames(Wavetable &tableToFill, int resolution)
+{
+    tableToFill.setSize(3, resolution);
+
+    auto *samples = tableToFill.getWritePointer(0);
+    auto angleDelta = juce::MathConstants<float>::twoPi / (float)(resolution - 1);
+    auto currentAngle = 0.f;
+
+    for (int i = 0; i < resolution; ++i)
+    {
+        auto sample = std::sin(currentAngle);
+        samples[i] = (float)sample;
+        currentAngle += angleDelta;
+    }
+
+    samples = tableToFill.getWritePointer(1);
+    angleDelta *= 2.f;
+    currentAngle = 0.f;
+
+    for (int i = 0; i < resolution; ++i)
+    {
+        auto sample = std::sin(currentAngle);
+        samples[i] = (float)sample;
+        currentAngle += angleDelta;
+    }
+
+    samples = tableToFill.getWritePointer(2);
+    angleDelta *= 2.f;
+    currentAngle = 0.0;
+
+    for (int i = 0; i < resolution; ++i)
+    {
+        auto sample = std::sin(currentAngle);
+        samples[i] = (float)sample;
+        currentAngle += angleDelta;
+    }
+}
+
+
 void generateSquareWavetable(Wavetable& tableToFill, int resolution)
 {
     tableToFill.setSize(1, resolution);
@@ -92,7 +131,7 @@ oversamplingEngine(2, (size_t)std::log(oversampleCoefficient), juce::dsp::Oversa
 #endif
 {
     Wavetable wavetable;
-    generateSawWavetable(wavetable, 512);
+    generateSineFrames(wavetable, 512);
     synthesizer.setWavetable(wavetable);
 
     synthesizer.stateValueTree = &valueTree;
@@ -221,6 +260,10 @@ void WavetableSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     auto voice = dynamic_cast<WavetableSynthesizerVoice *>(synthesizer.getVoice(0));
     voice->setRenderLevel(synthesizer.stateValueTree->getRawParameterValue("OSC_VOLUME")->load());
     voice->setRenderPan(synthesizer.stateValueTree->getRawParameterValue("OSC_PANNING")->load());
+   
+    auto wavetablePositionKnobValue = synthesizer.stateValueTree->getRawParameterValue("OSC_WAVETABLE_POSITION")->load();
+    auto wavetablePosition = std::floor(wavetablePositionKnobValue * (std::max(0, synthesizer.getNumWavetableFrames()-1)));
+    voice->setWavetableFrameIndex(wavetablePosition);
 
     synthesizer.setCurrentPlaybackSampleRate(getSampleRate() * oversampleCoefficient);
     synthesizer.renderNextBlock(oversampledBuffer, midiMessages, 0, oversampledBuffer.getNumSamples());
@@ -284,7 +327,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout WavetableSynthAudioProcessor
     layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_WARP_AMOUNT", "OSC_WARP_AMOUNT", oscWarpAmountRange, 0.f));
 
     // osc wavetable position
-    auto oscWavetablePositionRange = juce::NormalisableRange<float>(0.f, 255.f, 1.f, 1.f);
+    auto oscWavetablePositionRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f);
     layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_WAVETABLE_POSITION", "OSC_WAVETABLE_POSITION", oscWavetablePositionRange, 0.f));
 
     return layout;

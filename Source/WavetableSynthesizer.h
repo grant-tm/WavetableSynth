@@ -16,6 +16,7 @@ public:
 
 	void setWavetable(Wavetable&);
 	const Wavetable *getWavetableReadPointer();
+	int getNumWavetableFrames();
 
 	const juce::AudioProcessorValueTreeState *stateValueTree;
 

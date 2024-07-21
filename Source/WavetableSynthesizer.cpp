@@ -19,3 +19,8 @@ const Wavetable *WavetableSynthesizer::getWavetableReadPointer()
 {
 	return &wavetable;
 }
+
+int WavetableSynthesizer::getNumWavetableFrames()
+{
+	return wavetable.getNumChannels();
+}

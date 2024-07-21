@@ -24,6 +24,7 @@ void generateSineWavetable(Wavetable& tableToFill, int resolution);
 void generateSquareWavetable(Wavetable& tableToFill, int resolution);
 void generateSawWavetable(Wavetable& tableToFill, int resolution);
 void generateMultiSineWavetable(Wavetable& tableToFill, int resolution, int coefficientA, int coefficientB);
+void generateSineFrames(Wavetable &tableToFill, int resolution);
 
 //==============================================================================
 class WavetableSynthAudioProcessor  : public juce::AudioProcessor
