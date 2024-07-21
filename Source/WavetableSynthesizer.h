@@ -11,8 +11,18 @@
 class WavetableSynthesizer : public juce::Synthesiser
 {
 public:
+	WavetableSynthesizer();
+	~WavetableSynthesizer();
+
+	void setWavetable(Wavetable&);
+	const Wavetable *getWavetableReadPointer();
 
 	const juce::AudioProcessorValueTreeState *stateValueTree;
+
+private:
+
+	Wavetable wavetable;
+
 };
 
 #endif // WAVETABLE_SYNTHESIZER_H
