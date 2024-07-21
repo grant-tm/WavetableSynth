@@ -18,6 +18,7 @@ public:
     ~WavetableSynthesizerVoice();
 
     void setWavetable(const Wavetable* wavetableToUse);
+    void setWavetableFrameIndex(int);
 
     // RENDERING
     void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
@@ -60,6 +61,8 @@ protected:
     // WAVETABLE DESCRIPTION
     const Wavetable* wavetable;
     int wavetableSize;
+    int wavetableNumFrames;
+    int wavetableFrameIndex;
 
     // WAVETABLE POSITIONING
     float phase;

@@ -8,6 +8,8 @@ WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice(
     // initialize wavetable desc
     wavetable = nullptr;
     wavetableSize = 0;
+    wavetableNumFrames = 0;
+    wavetableFrameIndex = 0;
 
     // initialize render context
     renderSampleRate = 0.f;
@@ -44,6 +46,23 @@ void WavetableSynthesizerVoice::setWavetable(const Wavetable* wavetableToUse)
 {
     wavetable = wavetableToUse;
     wavetableSize = wavetable->getNumSamples();
+    wavetableNumFrames = wavetable->getNumChannels();
+}
+
+void WavetableSynthesizerVoice::setWavetableFrameIndex(int newFrameIndex)
+{
+    if (newFrameIndex <= 0)
+    {
+        wavetableFrameIndex = 0;
+    }
+    else if (newFrameIndex > wavetableNumFrames - 1)
+    {
+        wavetableFrameIndex = wavetableNumFrames - 1;
+    }
+    else
+    {
+        wavetableFrameIndex = newFrameIndex;
+    }
 }
 
 //==============================================================================
@@ -83,7 +102,7 @@ float WavetableSynthesizerVoice::getNextSample()
     // TODO: SIMD
     
     // select 4 samples around sampleIndex
-    auto values = wavetable->getReadPointer(0);
+    auto values = wavetable->getReadPointer(wavetableFrameIndex);
     float val0 = values[(sampleIndex - 1 + wavetableSize) % wavetableSize];
     float val1 = values[(sampleIndex + 0) % wavetableSize];
     float val2 = values[(sampleIndex + 1) % wavetableSize];
