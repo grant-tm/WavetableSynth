@@ -6,7 +6,7 @@
 WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice()
 {
     // initialize wavetable desc
-    wavetable.clear();
+    wavetable = nullptr;
     wavetableSize = 0;
 
     // initialize render context
@@ -31,37 +31,19 @@ WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice(
     pitchBendLowerBoundSemitones = -2;
 }
 
-WavetableSynthesizerVoice::WavetableSynthesizerVoice(Wavetable& wavetableToUse) : WavetableSynthesizerVoice::WavetableSynthesizerVoice()
+WavetableSynthesizerVoice::WavetableSynthesizerVoice(const Wavetable* wavetableToUse) : WavetableSynthesizerVoice::WavetableSynthesizerVoice()
 {
     setWavetable(wavetableToUse);
 }
 
 WavetableSynthesizerVoice::~WavetableSynthesizerVoice()
 {
-    wavetable.clear();
 }
 
-void WavetableSynthesizerVoice::setWavetable(Wavetable& wavetableToUse)
+void WavetableSynthesizerVoice::setWavetable(const Wavetable* wavetableToUse)
 {
-    // if wavetable is large enough, copy it and normalize it
-    if (wavetableToUse.getNumChannels() == 1 && wavetableToUse.getNumSamples() >= 16)
-    {
-        // copy wavetable
-        wavetable = wavetableToUse;
-        wavetableSize = wavetable.getNumSamples();
-
-        // get min and max values of wavetable
-        auto tableRange = wavetable.findMinMax(0, 0, wavetableSize);
-        auto min = tableRange.getStart();
-        auto max = tableRange.getEnd();
-
-        // normalize wavetable against max value
-        for (int sampleIndex = 0; sampleIndex < wavetableSize; ++sampleIndex)
-        {
-            auto sampleValue = (float)wavetable.getSample(0, sampleIndex) / max;
-            wavetable.setSample(0, sampleIndex, sampleValue);
-        }
-    }
+    wavetable = wavetableToUse;
+    wavetableSize = wavetable->getNumSamples();
 }
 
 //==============================================================================
@@ -101,10 +83,11 @@ float WavetableSynthesizerVoice::getNextSample()
     // TODO: SIMD
     
     // select 4 samples around sampleIndex
-    float val0 = wavetable.getSample(0, (sampleIndex - 1 + wavetableSize) % wavetableSize);
-    float val1 = wavetable.getSample(0, (sampleIndex + 0) % wavetableSize);
-    float val2 = wavetable.getSample(0, (sampleIndex + 1) % wavetableSize);
-    float val3 = wavetable.getSample(0, (sampleIndex + 2) % wavetableSize);
+    auto values = wavetable->getReadPointer(0);
+    float val0 = values[(sampleIndex - 1 + wavetableSize) % wavetableSize];
+    float val1 = values[(sampleIndex + 0) % wavetableSize];
+    float val2 = values[(sampleIndex + 1) % wavetableSize];
+    float val3 = values[(sampleIndex + 2) % wavetableSize];
 
     // calculate slopes to use at points val1 and val2 (avoid discontinuities)
     float slope0 = (val2 - val0) * 0.5f;
@@ -134,8 +117,11 @@ void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float>& output
     setRenderSampleRate(getSampleRate());
     updateDeltaPhase();
 
-    if (renderSampleRate == 0.f || renderFrequency < 15.f || renderLevel == 0)
-    {
+    if (renderSampleRate == 0.f 
+        || renderFrequency < 15.f 
+        || renderLevel == 0 
+        || wavetableSize == 0
+    ) {
         outputBuffer.clear(0, startSample, numSamples);
         outputBuffer.clear(1, startSample, numSamples);
         return;

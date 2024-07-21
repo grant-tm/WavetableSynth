@@ -14,10 +14,10 @@ public:
 
     // CONSTRUCTORS / DESTRUCTORS
     WavetableSynthesizerVoice();
-    WavetableSynthesizerVoice(Wavetable&);
+    WavetableSynthesizerVoice(const Wavetable*);
     ~WavetableSynthesizerVoice();
 
-    void setWavetable(Wavetable& wavetableToUse);
+    void setWavetable(const Wavetable* wavetableToUse);
 
     // RENDERING
     void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
@@ -58,7 +58,7 @@ protected:
     float noteVelocity;
 
     // WAVETABLE DESCRIPTION
-    Wavetable wavetable;
+    const Wavetable* wavetable;
     int wavetableSize;
 
     // WAVETABLE POSITIONING
