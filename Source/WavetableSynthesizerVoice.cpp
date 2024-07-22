@@ -133,7 +133,7 @@ void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float>& output
 {
     // update rendering parameters
     updateRenderFrequencyFromMidiInput();
-    setRenderSampleRate(getSampleRate());
+    setRenderSampleRate((float) getSampleRate());
     updateDeltaPhase();
 
     if (renderSampleRate == 0.f 
@@ -147,11 +147,11 @@ void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float>& output
     }
 
     // render a wave into the oversampled block
-    for (int sampleIndex = 0; sampleIndex < numSamples; ++sampleIndex)
+    for (int renderIndex = 0; renderIndex < numSamples; ++renderIndex)
     {
         float sampleValue = getNextSample() * renderLevel * noteVelocity;
-        outputBuffer.setSample(0, sampleIndex, sampleValue * renderPanCoefficientLeft);
-        outputBuffer.setSample(1, sampleIndex, sampleValue * renderPanCoefficientRight);
+        outputBuffer.setSample(0, renderIndex, sampleValue * renderPanCoefficientLeft);
+        outputBuffer.setSample(1, renderIndex, sampleValue * renderPanCoefficientRight);
     }
 }
 
@@ -234,6 +234,9 @@ void WavetableSynthesizerVoice::updateRenderFrequencyFromMidiInput()
 void WavetableSynthesizerVoice::startNote(int midiNoteNumber, float velocity,
     juce::SynthesiserSound* sound, int pitchWheelPosition)
 {
+    juce::ignoreUnused(sound);
+    juce::ignoreUnused(midiNoteNumber);
+
     setPitchBendPosition(pitchWheelPosition);
     updateRenderFrequencyFromMidiInput();
     noteVelocity = velocity;
@@ -241,6 +244,8 @@ void WavetableSynthesizerVoice::startNote(int midiNoteNumber, float velocity,
 
 void WavetableSynthesizerVoice::stopNote(float velocity, bool allowTailOff)
 {
+    juce::ignoreUnused(allowTailOff);
+    
     if (velocity == 0)
     {
         clearCurrentNote();
@@ -290,7 +295,7 @@ void WavetableSynthesizerVoice::controllerMoved(int controllerNumber, int newCon
 // convert a midi note number to Hz with a cent offset
 float WavetableSynthesizerVoice::getOffsetMidiNoteInHertz(int midiNoteNumber, float centsOffset)
 {
-    float noteHz = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
+    auto noteHz = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
     noteHz *= std::pow(2.0, centsOffset / 1200);
-    return noteHz;
+    return (float) noteHz;
 }
