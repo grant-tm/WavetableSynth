@@ -17,6 +17,8 @@ struct SynthesizerState
     float oscWarpAmount{0.f};
 
     float oscWavetablePosition{0.f};
+    int   oscWavetableNumFrames{0};
+    int   oscWavetableCurrentFrame{0};
 };
 
 SynthesizerState getSynthesizerStateFromValueTree(juce::AudioProcessorValueTreeState& valueTree);

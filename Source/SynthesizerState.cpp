@@ -13,6 +13,9 @@ SynthesizerState getSynthesizerStateFromValueTree(juce::AudioProcessorValueTreeS
     state.oscWarpAmount = valueTree.getRawParameterValue("OSC_WARP_AMOUNT")->load();
 
     state.oscWavetablePosition = valueTree.getRawParameterValue("OSC_WAVETABLE_POSITION")->load();
+    state.oscWavetableNumFrames = valueTree.getRawParameterValue("OSC_WAVETABLE_NUM_FRAMES")->load();
+    state.oscWavetableCurrentFrame = valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->load();
+
 
     return state;
 }
