@@ -43,7 +43,7 @@ public:
     void pitchWheelMoved(int newPitchWheelValue) override;
     void setPitchBendPosition(int position);
     float getPitchBendOffsetCents();
-    void controllerMoved(int controllerNumber, int newControllerValue) override {} // declared by necessity; not used
+    void controllerMoved(int controllerNumber, int newControllerValue) override;
 
     // HELPERS
     static float getOffsetMidiNoteInHertz(int midiNoteNumber, float centsOffset);

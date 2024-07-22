@@ -277,6 +277,13 @@ float WavetableSynthesizerVoice::getPitchBendOffsetCents()
         return pitchBendWheelPosition * (float) pitchBendLowerBoundSemitones * 100.f;
 }
 
+void WavetableSynthesizerVoice::controllerMoved(int controllerNumber, int newControllerValue)
+{
+    juce::ignoreUnused(controllerNumber);
+    juce::ignoreUnused(newControllerValue);
+    return;
+}
+
 //==============================================================================
 // HELPERS
 
