@@ -17,52 +17,50 @@ public:
     WavetableSynthesizerVoice(const Wavetable*);
     ~WavetableSynthesizerVoice();
 
+    // WAVETABLE MANAGEMENT
     void setWavetable(const Wavetable* wavetableToUse);
     void setWavetableFrameIndex(int);
 
     // RENDERING
     void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
-    bool canPlaySound(juce::SynthesiserSound* sound) override;
+    float getInterpolatedSampleFromCurrentPhase();
     void updateDeltaPhase();
     void updatePhase();
-    float getNextSample();
+    bool canPlaySound(juce::SynthesiserSound *sound) override;
 
-    // UPDATE RENDER CONTEXT
+    // UPDATE RENDER PARAMETERS
     void setRenderSampleRate(float);
     void setRenderFrequency(float);
     void updateRenderFrequencyFromMidiInput();
     void setRenderLevel(float);
     void setRenderPan(float);
-    void calculatePanningCoefficients(float);
    
     // NOTE ON OFF
     void startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound* sound, int pitchWheelPosition) override;
     void stopNote(float velocity, bool allowTailOff) override;
     
-    // PITCHBEND CONTROLS
+    // MIDI
     void pitchWheelMoved(int newPitchWheelValue) override;
     void setPitchBendPosition(int position);
     float getPitchBendOffsetCents();
-    void controllerMoved(int controllerNumber, int newControllerValue) override;
-
-    // HELPERS
     static float getOffsetMidiNoteInHertz(int midiNoteNumber, float centsOffset);
+    void controllerMoved(int controllerNumber, int newControllerValue) override;
 
 protected:
 
-    // RENDER 
+    // WAVETABLE DESCRIPTION
+    const Wavetable *wavetable;
+    int wavetableSize;
+    int wavetableNumFrames;
+    int wavetableFrameIndex;
+
+    // RENDER PARAMETERS
     float renderSampleRate;
     float renderFrequency;
     float renderLevel;
     float renderPanCoefficientLeft;
     float renderPanCoefficientRight;
     float noteVelocity;
-
-    // WAVETABLE DESCRIPTION
-    const Wavetable* wavetable;
-    int wavetableSize;
-    int wavetableNumFrames;
-    int wavetableFrameIndex;
 
     // WAVETABLE POSITIONING
     float phase;

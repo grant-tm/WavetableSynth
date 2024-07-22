@@ -1,6 +1,6 @@
 #include "WavetableSynthesizerVoice.h"
 
-//==============================================================================
+//=============================================================================
 // CONSTRUCTORS / DESTRUCTORS
 
 WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice()
@@ -14,12 +14,10 @@ WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice(
     // initialize render context
     renderSampleRate = 0.f;
     renderFrequency = 0.f;
-    renderLevel = 0.f;
-    
-    noteVelocity = 0.f;
-    
+    renderLevel = 0.f; 
     renderPanCoefficientLeft = 0.f;
     renderPanCoefficientRight = 0.f;
+    noteVelocity = 0.f;
 
     // initialize wavetable positioning
     updateDeltaPhase();
@@ -33,14 +31,16 @@ WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice(
     pitchBendLowerBoundSemitones = -2;
 }
 
-WavetableSynthesizerVoice::WavetableSynthesizerVoice(const Wavetable* wavetableToUse) : WavetableSynthesizerVoice::WavetableSynthesizerVoice()
+WavetableSynthesizerVoice::WavetableSynthesizerVoice(const Wavetable* wavetableToUse) : 
+    WavetableSynthesizerVoice::WavetableSynthesizerVoice()
 {
     setWavetable(wavetableToUse);
 }
 
-WavetableSynthesizerVoice::~WavetableSynthesizerVoice()
-{
-}
+WavetableSynthesizerVoice::~WavetableSynthesizerVoice() {}
+
+//=============================================================================
+// WAVETABLE MANAGEMENT
 
 void WavetableSynthesizerVoice::setWavetable(const Wavetable* wavetableToUse)
 {
@@ -51,56 +51,52 @@ void WavetableSynthesizerVoice::setWavetable(const Wavetable* wavetableToUse)
 
 void WavetableSynthesizerVoice::setWavetableFrameIndex(int newFrameIndex)
 {
-    if (newFrameIndex <= 0)
-    {
-        wavetableFrameIndex = 0;
-    }
-    else if (newFrameIndex > wavetableNumFrames - 1)
-    {
-        wavetableFrameIndex = wavetableNumFrames - 1;
-    }
-    else
-    {
-        wavetableFrameIndex = newFrameIndex;
-    }
+    newFrameIndex = juce::jmax(0, newFrameIndex);
+    newFrameIndex = juce::jmin(newFrameIndex, wavetableNumFrames);
+    wavetableFrameIndex = newFrameIndex;
 }
 
-//==============================================================================
+//=============================================================================
 // RENDERING
 
-// idk what this really means but it has to override the base class
-bool WavetableSynthesizerVoice::canPlaySound(juce::SynthesiserSound* sound)
-{
-    return dynamic_cast <WavetableSynthesizerSound*>(sound) != nullptr;
+// fill a buffer with samples using the wavetable
+void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float> &outputBuffer, 
+    int startSample, int numSamples
+) {
+    // update rendering parameters
+    updateRenderFrequencyFromMidiInput();
+    setRenderSampleRate((float)getSampleRate());
+    updateDeltaPhase();
+
+    // check render prequisites
+    if (deltaPhase == 0 || renderLevel == 0 || wavetableSize == 0)
+    {
+        outputBuffer.clear(0, startSample, numSamples);
+        outputBuffer.clear(1, startSample, numSamples);
+        return;
+    }
+
+    // render a wave into the oversampled block
+    auto output = outputBuffer.getArrayOfWritePointers();
+    for (int renderIndex = 0; renderIndex < numSamples; ++renderIndex)
+    {
+        // get raw sample
+        float rawSampleValue = getInterpolatedSampleFromCurrentPhase();
+
+        // apply level changes from volume knob and note velocity
+        float sampleValue = rawSampleValue * renderLevel * noteVelocity;
+
+        // apply panning coefficients while writing to output
+        output[0][renderIndex] = sampleValue * renderPanCoefficientLeft;
+        output[1][renderIndex] = sampleValue * renderPanCoefficientRight;
+    }
 }
 
-// calculate deltaPhase based on frequency and sampleRate
-// also updates frequency based on currently playing note and pitch wheel position
-void WavetableSynthesizerVoice::updateDeltaPhase()
-{
-    deltaPhase = (renderSampleRate > 0.f) ? (renderFrequency / renderSampleRate) : 0.f;
-}
-
-// update the phase and calculate sampleIndex and sampleOffset
-void WavetableSynthesizerVoice::updatePhase()
+// interpolate sample from current wave phase
+float WavetableSynthesizerVoice::getInterpolatedSampleFromCurrentPhase()
 {
     // TODO: SIMD
-    // TODO: use fixed point instead of wrapping with std::floor
 
-    phase += deltaPhase;
-    phase -= std::floor(phase);
-
-    float scaledPhase = phase * wavetableSize;
-
-    sampleIndex = (int) scaledPhase;
-    sampleOffset = scaledPhase - (float) sampleIndex;
-}
-
-// calculate a single float sample by interpolating around the current sampleIndex and sampleOffset
-float WavetableSynthesizerVoice::getNextSample()
-{
-    // TODO: SIMD
-    
     // select 4 samples around sampleIndex
     auto values = wavetable->getReadPointer(wavetableFrameIndex);
     float val0 = values[(sampleIndex - 1 + wavetableSize) % wavetableSize];
@@ -128,118 +124,114 @@ float WavetableSynthesizerVoice::getNextSample()
     return result;
 }
 
-// fill a buffer with samples using the wavetable
-void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples)
+// calculate and update deltaPhase based on frequency and sampleRate
+void WavetableSynthesizerVoice::updateDeltaPhase()
 {
-    // update rendering parameters
-    updateRenderFrequencyFromMidiInput();
-    setRenderSampleRate((float) getSampleRate());
-    updateDeltaPhase();
-
-    if (renderSampleRate == 0.f 
-        || renderFrequency < 15.f 
-        || renderLevel == 0 
-        || wavetableSize == 0
-    ) {
-        outputBuffer.clear(0, startSample, numSamples);
-        outputBuffer.clear(1, startSample, numSamples);
-        return;
-    }
-
-    // render a wave into the oversampled block
-    for (int renderIndex = 0; renderIndex < numSamples; ++renderIndex)
+    if (renderSampleRate == 0.f)
     {
-        float sampleValue = getNextSample() * renderLevel * noteVelocity;
-        outputBuffer.setSample(0, renderIndex, sampleValue * renderPanCoefficientLeft);
-        outputBuffer.setSample(1, renderIndex, sampleValue * renderPanCoefficientRight);
-    }
-}
-
-void WavetableSynthesizerVoice::calculatePanningCoefficients(float pan) {
-    // Clamp the pan value to the range [-1, 1]
-    if (pan < -1.f) pan = -1.f;
-    if (pan > 1.f) pan = 1.f;
-
-    // Calculate the coefficients
-    renderPanCoefficientLeft = std::cos((juce::MathConstants<float>::pi / 4.0f) * (1.0f + pan));
-    renderPanCoefficientRight = std::sin((juce::MathConstants<float>::pi / 4.0f) * (1.0f + pan));
-}
-
-//==============================================================================
-// UPDATE RENDER CONTEXT
-
-void WavetableSynthesizerVoice::setRenderSampleRate(float newRenderSampleRate)
-{
-    if (newRenderSampleRate > 0.f)
-    {
-        renderSampleRate = newRenderSampleRate;
-    }
-    else
-    {
-        renderSampleRate = 0.f;
-    }
-}
-
-void WavetableSynthesizerVoice::setRenderFrequency(float newRenderFrequency)
-{
-    if (newRenderFrequency > 0.f)
-    {
-        renderFrequency = newRenderFrequency;
+        deltaPhase = 0.f;
     }
     else 
     {
-        renderFrequency = 0.f;
+        deltaPhase = juce::jmax(0.f, renderFrequency / renderSampleRate);
     }
 }
 
-void WavetableSynthesizerVoice::setRenderLevel(float newRenderLevel)
+// update the phase and calculate sampleIndex and sampleOffset
+void WavetableSynthesizerVoice::updatePhase()
 {
-    if (newRenderLevel < 0.f)
-    {
-        renderLevel = 0.f;
-    }
-    else if (newRenderLevel > 1.f)
-    {
-        renderLevel = 1.f;
-    }
-    else {
-        renderLevel = newRenderLevel;
-    }
+    // TODO: SIMD
+    // TODO: use fixed point instead of wrapping with std::floor
+
+    phase += deltaPhase;
+    phase -= std::floor(phase);
+
+    float scaledPhase = phase * wavetableSize;
+
+    sampleIndex = (int) scaledPhase;
+    sampleOffset = scaledPhase - (float) sampleIndex;
 }
 
-void WavetableSynthesizerVoice::setRenderPan(float newPan)
+// idk what this really means but it has to override the base class
+bool WavetableSynthesizerVoice::canPlaySound(juce::SynthesiserSound *sound)
 {
-    if (newPan < -1.f)
-    {
-        calculatePanningCoefficients(-1.f);
-    }
-    else if (newPan >= 1.f)
-    {
-        calculatePanningCoefficients(1.f);
-    }
-    else {
-        calculatePanningCoefficients(newPan);
-    }
+    return dynamic_cast <WavetableSynthesizerSound *>(sound) != nullptr;
+}
+
+//=============================================================================
+// UPDATE RENDER PARAMETERS
+
+//-------------------------------------
+// sample rate
+
+void WavetableSynthesizerVoice::setRenderSampleRate(float newRenderSampleRate)
+{
+    // limit sample rate to [0, 192k]
+    newRenderSampleRate = juce::jmax(0.f, newRenderSampleRate);
+    newRenderSampleRate = juce::jmin(newRenderSampleRate, 192000.f);
+
+    renderSampleRate = newRenderSampleRate;
+}
+
+//-------------------------------------
+// frequency
+
+void WavetableSynthesizerVoice::setRenderFrequency(float newRenderFrequency)
+{
+    // limit frequnecy to [0, 20k]
+    newRenderFrequency = juce::jmax(0.f, newRenderFrequency);
+    newRenderFrequency = juce::jmin(newRenderFrequency, 20000.f);
+    
+    renderFrequency = newRenderFrequency;
 }
 
 void WavetableSynthesizerVoice::updateRenderFrequencyFromMidiInput()
 {
-    auto newFrequency = getOffsetMidiNoteInHertz(getCurrentlyPlayingNote(), getPitchBendOffsetCents());
+    auto currentNote = getCurrentlyPlayingNote();
+    auto pitchBendOffsetCents = getPitchBendOffsetCents();
+    auto newFrequency = getOffsetMidiNoteInHertz(currentNote, pitchBendOffsetCents);
     setRenderFrequency(newFrequency);
 }
 
-//==============================================================================
+//-------------------------------------
+// level
+
+void WavetableSynthesizerVoice::setRenderLevel(float newRenderLevel)
+{
+    // limit level to [0, 1]
+    newRenderLevel = juce::jmax(0.f, newRenderLevel);
+    newRenderLevel = juce::jmin(newRenderLevel, 1.f);
+    
+    renderLevel = newRenderLevel;
+}
+
+//-------------------------------------
+// pan
+
+void WavetableSynthesizerVoice::setRenderPan(float newPanningValue)
+{
+    // limit pan to [-1, 1]
+    newPanningValue = juce::jmax(-1.f, newPanningValue);
+    newPanningValue = juce::jmin(newPanningValue, 1.f);
+
+    // calculate coefficients to be applied to each channel
+    renderPanCoefficientLeft = std::cos((juce::MathConstants<float>::pi / 4.0f) * (1.0f + newPanningValue));
+    renderPanCoefficientRight = std::sin((juce::MathConstants<float>::pi / 4.0f) * (1.0f + newPanningValue));
+}
+
+//=============================================================================
 // NOTE ON OFF
 
-void WavetableSynthesizerVoice::startNote(int midiNoteNumber, float velocity,
-    juce::SynthesiserSound* sound, int pitchWheelPosition)
+void WavetableSynthesizerVoice::startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound* sound, int pitchWheelPosition)
 {
+    // TODO: use midi note number and pitch wheel position instead of this
+    updateRenderFrequencyFromMidiInput();
+
+    noteVelocity = velocity;
+
     juce::ignoreUnused(sound);
     juce::ignoreUnused(midiNoteNumber);
-
-    setPitchBendPosition(pitchWheelPosition);
-    updateRenderFrequencyFromMidiInput();
-    noteVelocity = velocity;
+    juce::ignoreUnused(pitchWheelPosition);
 }
 
 void WavetableSynthesizerVoice::stopNote(float velocity, bool allowTailOff)
@@ -253,8 +245,8 @@ void WavetableSynthesizerVoice::stopNote(float velocity, bool allowTailOff)
     noteVelocity = velocity;
 }
 
-//==============================================================================
-// PITCHBEND CONTROLS
+//=============================================================================
+// MIDI
 
 // pitch wheel move callback: store new position and update frequency
 void WavetableSynthesizerVoice::pitchWheelMoved(int newPitchWheelValue)
@@ -275,11 +267,23 @@ void WavetableSynthesizerVoice::setPitchBendPosition(int position)
 float WavetableSynthesizerVoice::getPitchBendOffsetCents()
 {
     if (pitchBendWheelPosition >= 0.0f)
+    {
         // calculate cents based on position relative to UPPER bound
-        return pitchBendWheelPosition * (float) pitchBendUpperBoundSemitones * 100.f;
+        return pitchBendWheelPosition * (float)pitchBendUpperBoundSemitones * 100.f;
+    }
     else
+    {
         // calculate cents based on position relative to LOWER lower
-        return pitchBendWheelPosition * (float) pitchBendLowerBoundSemitones * 100.f;
+        return pitchBendWheelPosition * (float)pitchBendLowerBoundSemitones * 100.f;
+    }
+}
+
+// convert a midi note number to Hz with a cent offset
+float WavetableSynthesizerVoice::getOffsetMidiNoteInHertz(int midiNoteNumber, float centsOffset)
+{
+    auto noteHz = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
+    noteHz *= std::pow(2.0, centsOffset / 1200);
+    return (float)noteHz;
 }
 
 void WavetableSynthesizerVoice::controllerMoved(int controllerNumber, int newControllerValue)
@@ -287,15 +291,4 @@ void WavetableSynthesizerVoice::controllerMoved(int controllerNumber, int newCon
     juce::ignoreUnused(controllerNumber);
     juce::ignoreUnused(newControllerValue);
     return;
-}
-
-//==============================================================================
-// HELPERS
-
-// convert a midi note number to Hz with a cent offset
-float WavetableSynthesizerVoice::getOffsetMidiNoteInHertz(int midiNoteNumber, float centsOffset)
-{
-    auto noteHz = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
-    noteHz *= std::pow(2.0, centsOffset / 1200);
-    return (float) noteHz;
 }
