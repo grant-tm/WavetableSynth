@@ -11,10 +11,10 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
-#include "SynthesizerState.h"
+#include "Synthesizer/SynthesizerState.h"
 
-#include "Knob.h"
-#include "WavetableDisplay.h"
+#include "GUI Components/Knob.h"
+#include "GUI Components/WavetableDisplay.h"
 
 enum ColorPalette
 {

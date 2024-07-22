@@ -2,7 +2,7 @@
 #define WAVETABLE_DISPLAY_H
 
 #include <JuceHeader.h>
-#include "PluginProcessor.h"
+#include "../PluginProcessor.h"
 
 struct WavetableDisplayComponent : 
     juce::Component,

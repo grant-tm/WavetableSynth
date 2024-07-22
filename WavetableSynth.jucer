@@ -7,31 +7,31 @@
               pluginFormats="buildStandalone,buildVST3">
   <MAINGROUP id="mUcVvk" name="WavetableSynth">
     <GROUP id="{142DF1E7-718A-1031-2A13-D414D869B7E9}" name="Source">
-      <GROUP id="{DBC51D56-CCBC-C479-91CD-74ED575DBC33}" name="GUI_Components">
-        <FILE id="wSmkBc" name="Knob.cpp" compile="1" resource="0" file="Source/Knob.cpp"/>
-        <FILE id="X0Np73" name="Knob.h" compile="0" resource="0" file="Source/Knob.h"/>
-        <FILE id="K2jPyb" name="WavetableDisplay.cpp" compile="1" resource="0"
-              file="Source/WavetableDisplay.cpp"/>
-        <FILE id="IHt1SX" name="WavetableDisplay.h" compile="0" resource="0"
-              file="Source/WavetableDisplay.h"/>
+      <GROUP id="{5382074C-A14F-6BC8-3759-395CB366F725}" name="GUI Components">
+        <FILE id="jl7PIL" name="Knob.cpp" compile="1" resource="0" file="Source/GUI Components/Knob.cpp"/>
+        <FILE id="NEVLcl" name="Knob.h" compile="0" resource="0" file="Source/GUI Components/Knob.h"/>
+        <FILE id="rZCPUV" name="WavetableDisplay.cpp" compile="1" resource="0"
+              file="Source/GUI Components/WavetableDisplay.cpp"/>
+        <FILE id="U8x8Zs" name="WavetableDisplay.h" compile="0" resource="0"
+              file="Source/GUI Components/WavetableDisplay.h"/>
       </GROUP>
-      <GROUP id="{3D81EED1-24E2-FF25-246A-6DCA3E341B3D}" name="Synthesizer">
-        <FILE id="tLY8s1" name="WavetableSynthesizerSound.cpp" compile="1"
-              resource="0" file="Source/WavetableSynthesizerSound.cpp"/>
-        <FILE id="UZr7gJ" name="WavetableSynthesizerSound.h" compile="0" resource="0"
-              file="Source/WavetableSynthesizerSound.h"/>
-        <FILE id="oESRQx" name="SynthesizerState.cpp" compile="1" resource="0"
-              file="Source/SynthesizerState.cpp"/>
-        <FILE id="nbg0Qi" name="WavetableSynthesizer.cpp" compile="1" resource="0"
-              file="Source/WavetableSynthesizer.cpp"/>
-        <FILE id="JudFXp" name="SynthesizerState.h" compile="0" resource="0"
-              file="Source/SynthesizerState.h"/>
-        <FILE id="AJ71PY" name="WavetableSynthesizer.h" compile="0" resource="0"
-              file="Source/WavetableSynthesizer.h"/>
-        <FILE id="u3IvLj" name="WavetableSynthesizerVoice.h" compile="0" resource="0"
-              file="Source/WavetableSynthesizerVoice.h"/>
-        <FILE id="dca57X" name="WavetableSynthesizerVoice.cpp" compile="1"
-              resource="0" file="Source/WavetableSynthesizerVoice.cpp"/>
+      <GROUP id="{296F3735-FBD2-6017-9A9F-A876F22C8E6A}" name="Synthesizer">
+        <FILE id="cT6Hea" name="SynthesizerState.cpp" compile="1" resource="0"
+              file="Source/Synthesizer/SynthesizerState.cpp"/>
+        <FILE id="rDRnf4" name="SynthesizerState.h" compile="0" resource="0"
+              file="Source/Synthesizer/SynthesizerState.h"/>
+        <FILE id="bNl4tk" name="WavetableSynthesizer.cpp" compile="1" resource="0"
+              file="Source/Synthesizer/WavetableSynthesizer.cpp"/>
+        <FILE id="LVvwuw" name="WavetableSynthesizer.h" compile="0" resource="0"
+              file="Source/Synthesizer/WavetableSynthesizer.h"/>
+        <FILE id="AObqYe" name="WavetableSynthesizerSound.cpp" compile="1"
+              resource="0" file="Source/Synthesizer/WavetableSynthesizerSound.cpp"/>
+        <FILE id="Fh8yJq" name="WavetableSynthesizerSound.h" compile="0" resource="0"
+              file="Source/Synthesizer/WavetableSynthesizerSound.h"/>
+        <FILE id="JJB9A8" name="WavetableSynthesizerVoice.cpp" compile="1"
+              resource="0" file="Source/Synthesizer/WavetableSynthesizerVoice.cpp"/>
+        <FILE id="Rk59mw" name="WavetableSynthesizerVoice.h" compile="0" resource="0"
+              file="Source/Synthesizer/WavetableSynthesizerVoice.h"/>
       </GROUP>
       <FILE id="qMYAla" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
