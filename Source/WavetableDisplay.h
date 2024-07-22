@@ -31,6 +31,9 @@ private:
     // REFERENCE TO AUDIO PROCESSOR
     WavetableSynthAudioProcessor& audioProcessor;
 
+    const Wavetable *wavetableRef;
+    int wavetableCurrentFrameIndex;
+
     // WAVETABLE
     juce::AudioBuffer<float> wavetable;
     juce::Atomic<bool> wavetableChanged{ false };

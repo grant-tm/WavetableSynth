@@ -3,18 +3,19 @@
 //================================================================================================
 // CONSTRUCTORS / DESTRUCTORS
 
-WavetableDisplayComponent::WavetableDisplayComponent(WavetableSynthAudioProcessor& p) :
+WavetableDisplayComponent::WavetableDisplayComponent(WavetableSynthAudioProcessor &p) :
     audioProcessor(p)
 {
+    wavetableRef = audioProcessor.synthesizer.getWavetableReadPointer();
+    wavetableCurrentFrameIndex = 0;
+
     const auto& params = audioProcessor.getParameters();
     for (auto param : params)
     {
         param->addListener(this);
     }
 
-    updateWavetable();
-
-    startTimerHz(24);
+    startTimerHz(5);
 }
 
 WavetableDisplayComponent::~WavetableDisplayComponent()
@@ -87,11 +88,19 @@ void WavetableDisplayComponent::updateWavetable()
 // TIMER SETS REFRESH RATE
 
 void WavetableDisplayComponent::timerCallback()
-{
+{    
     if (wavetableChanged.compareAndSetBool(false, true))
     {
-        updateWavetable();
+        wavetableCurrentFrameIndex = audioProcessor.valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->load();
+        if (wavetableCurrentFrameIndex < 0) {
+            wavetableCurrentFrameIndex = 0;
+        }
+        else if (wavetableCurrentFrameIndex > audioProcessor.synthesizer.getNumWavetableFrames() - 1)
+        {
+            wavetableCurrentFrameIndex = audioProcessor.synthesizer.getNumWavetableFrames() - 1;
+        }
     }
+    
     repaint();
 }
 
@@ -103,16 +112,17 @@ void WavetableDisplayComponent::timerCallback()
 float WavetableDisplayComponent::getHermiteInterpolatedWavetableSample(float phase)
 {
     // get sample index and offset
-    int wavetableSize = wavetable.getNumSamples();
+    int wavetableSize = wavetableRef->getNumSamples();
     float scaledPhase = phase * wavetableSize;
     int sampleIndex = (int) scaledPhase;
     float sampleOffset = scaledPhase - (float) sampleIndex;
 
     // select 4 samples around sampleIndex
-    float val0 = wavetable.getSample(0, (sampleIndex - 1 + wavetableSize) % wavetableSize);
-    float val1 = wavetable.getSample(0, (sampleIndex + 0) % wavetableSize);
-    float val2 = wavetable.getSample(0, (sampleIndex + 1) % wavetableSize);
-    float val3 = wavetable.getSample(0, (sampleIndex + 2) % wavetableSize);
+    auto samples = wavetableRef->getReadPointer(wavetableCurrentFrameIndex);
+    float val0 = samples[(sampleIndex - 1 + wavetableSize) % wavetableSize];
+    float val1 = samples[(sampleIndex + 0) % wavetableSize];
+    float val2 = samples[(sampleIndex + 1) % wavetableSize];
+    float val3 = samples[(sampleIndex + 2) % wavetableSize];
 
     // calculate slopes to use at points val1 and val2 (avoid discontinuities)
     float slope0 = (val2 - val0) * 0.5f;
@@ -136,14 +146,15 @@ float WavetableDisplayComponent::getHermiteInterpolatedWavetableSample(float pha
 float WavetableDisplayComponent::getLinearlyInterpolatedWavetableSample(float phase)
 {
     // get sample index and offset
-    int wavetableSize = wavetable.getNumSamples();
+    int wavetableSize = wavetableRef->getNumSamples();
     float scaledPhase = phase * wavetableSize;
     int sampleIndex = static_cast<int>(scaledPhase);
     float sampleOffset = scaledPhase - static_cast<float>(sampleIndex);
 
     // select the samples around sampleIndex
-    float val1 = wavetable.getSample(0, sampleIndex % wavetableSize);
-    float val2 = wavetable.getSample(0, (sampleIndex + 1) % wavetableSize);
+    auto samples = wavetableRef->getReadPointer(wavetableCurrentFrameIndex);
+    float val1 = samples[sampleIndex % wavetableSize];
+    float val2 = samples[(sampleIndex + 1) % wavetableSize];
 
     // perform linear interpolation
     float result = val1 + sampleOffset * (val2 - val1);
@@ -157,10 +168,10 @@ juce::Path WavetableDisplayComponent::createPathFromWavetable()
     // COPY AUDIO BUFFER
 
     std::vector<double> mags;
-    mags.reserve(wavetable.getNumSamples());
-    for (int i = 0; i < wavetable.getNumSamples(); i++)
+    mags.reserve(wavetableRef->getNumSamples());
+    for (int i = 0; i < wavetableRef->getNumSamples(); i++)
     {
-        mags.push_back((double)wavetable.getSample(0, i));
+        mags.push_back((double)wavetableRef->getSample(0, i));
     }
 
     //------------------------------------------------------------------------
@@ -190,7 +201,7 @@ juce::Path WavetableDisplayComponent::createPathFromWavetable()
     {
         // get sapmle from wavetable
         float wavetablePhase = (float) (x / numXPixels);
-        int wavetableSampleIndex = (int) (wavetablePhase * wavetable.getNumSamples());
+        int wavetableSampleIndex = (int) (wavetablePhase * wavetableRef->getNumSamples());
         float wavetableSampleValue = getLinearlyInterpolatedWavetableSample(wavetablePhase);
 
         // apply scaling factor
