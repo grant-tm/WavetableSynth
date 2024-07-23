@@ -32,6 +32,7 @@ public:
     void setRenderSampleRate(float);
     void setRenderFrequency(float);
     void updateRenderFrequencyFromMidiInput();
+    void updateRenderFrequencyFromMidiNote(int, int);
     void setRenderLevel(float);
     void setRenderPan(float);
    
@@ -43,6 +44,8 @@ public:
     void pitchWheelMoved(int newPitchWheelValue) override;
     void setPitchBendPosition(int position);
     float getPitchBendOffsetCents();
+    float getPitchBendOffsetCents(float);
+
     static float getOffsetMidiNoteInHertz(int midiNoteNumber, float centsOffset);
     void controllerMoved(int controllerNumber, int newControllerValue) override;
 
