@@ -48,6 +48,8 @@ public:
 
 protected:
 
+    juce::ADSR adsrEnvelope;
+
     // WAVETABLE DESCRIPTION
     const Wavetable *wavetable;
     int wavetableSize;

@@ -29,6 +29,9 @@ WavetableSynthesizerVoice::WavetableSynthesizerVoice() : juce::SynthesiserVoice(
     pitchBendWheelPosition = 0.f;
     pitchBendUpperBoundSemitones = 2;
     pitchBendLowerBoundSemitones = -2;
+
+    juce::ADSR::Parameters adsrDefaultParameters(0.2f, 1.f, 0.3f, 1.f);
+    adsrEnvelope.setParameters(adsrDefaultParameters);
 }
 
 WavetableSynthesizerVoice::WavetableSynthesizerVoice(const Wavetable* wavetableToUse) : 
@@ -69,7 +72,7 @@ void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float> &output
     updateDeltaPhase();
 
     // check render prequisites
-    if (deltaPhase == 0 || renderLevel == 0 || wavetableSize == 0)
+    if (deltaPhase == 0 || renderLevel == 0 || wavetableSize == 0 || !adsrEnvelope.isActive())
     {
         outputBuffer.clear(0, startSample, numSamples);
         outputBuffer.clear(1, startSample, numSamples);
@@ -90,6 +93,8 @@ void WavetableSynthesizerVoice::renderNextBlock(juce::AudioBuffer<float> &output
         output[0][renderIndex] = sampleValue * renderPanCoefficientLeft;
         output[1][renderIndex] = sampleValue * renderPanCoefficientRight;
     }
+
+    adsrEnvelope.applyEnvelopeToBuffer(outputBuffer, startSample, numSamples);
 }
 
 // interpolate sample from current wave phase
@@ -229,6 +234,8 @@ void WavetableSynthesizerVoice::startNote(int midiNoteNumber, float velocity, ju
 
     noteVelocity = velocity;
 
+    adsrEnvelope.noteOn();
+
     juce::ignoreUnused(sound);
     juce::ignoreUnused(midiNoteNumber);
     juce::ignoreUnused(pitchWheelPosition);
@@ -243,6 +250,8 @@ void WavetableSynthesizerVoice::stopNote(float velocity, bool allowTailOff)
         clearCurrentNote();
     }
     noteVelocity = velocity;
+
+    adsrEnvelope.noteOff();
 }
 
 //=============================================================================
