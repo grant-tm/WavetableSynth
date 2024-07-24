@@ -16,6 +16,10 @@
               file="Source/GUI Components/WavetableDisplay.h"/>
       </GROUP>
       <GROUP id="{296F3735-FBD2-6017-9A9F-A876F22C8E6A}" name="Synthesizer">
+        <FILE id="xfRxii" name="Oscillator.cpp" compile="1" resource="0" file="Source/Synthesizer/Oscillator.cpp"/>
+        <FILE id="fPmzaJ" name="Oscillator.h" compile="0" resource="0" file="Source/Synthesizer/Oscillator.h"/>
+        <FILE id="JcIKhr" name="Synthesizer.cpp" compile="1" resource="0" file="Source/Synthesizer/Synthesizer.cpp"/>
+        <FILE id="iB2ox8" name="Synthesizer.h" compile="0" resource="0" file="Source/Synthesizer/Synthesizer.h"/>
         <FILE id="cT6Hea" name="SynthesizerState.cpp" compile="1" resource="0"
               file="Source/Synthesizer/SynthesizerState.cpp"/>
         <FILE id="rDRnf4" name="SynthesizerState.h" compile="0" resource="0"
