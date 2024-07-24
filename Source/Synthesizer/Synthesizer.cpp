@@ -178,9 +178,13 @@ void Synthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffe
 {
     auto currentSample = 0;
 
-    oscillators[0].setVolume(volume);
-    oscillators[0].setPan(pan);
-    oscillators[0].setWavetableFrameIndex(wavetableFrameIndex);
+    for (auto& oscillator : oscillators)
+    {
+        oscillator.setSampleRate(sampleRate);
+        oscillator.setVolume(volume);
+        oscillator.setPan(pan);
+        oscillator.setWavetableFrameIndex(wavetableFrameIndex);
+    }
 
     updateOscillatorDetuneIfChanged(0);
 
