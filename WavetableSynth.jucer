@@ -24,18 +24,6 @@
               file="Source/Synthesizer/SynthesizerState.cpp"/>
         <FILE id="rDRnf4" name="SynthesizerState.h" compile="0" resource="0"
               file="Source/Synthesizer/SynthesizerState.h"/>
-        <FILE id="bNl4tk" name="WavetableSynthesizer.cpp" compile="1" resource="0"
-              file="Source/Synthesizer/WavetableSynthesizer.cpp"/>
-        <FILE id="LVvwuw" name="WavetableSynthesizer.h" compile="0" resource="0"
-              file="Source/Synthesizer/WavetableSynthesizer.h"/>
-        <FILE id="AObqYe" name="WavetableSynthesizerSound.cpp" compile="1"
-              resource="0" file="Source/Synthesizer/WavetableSynthesizerSound.cpp"/>
-        <FILE id="Fh8yJq" name="WavetableSynthesizerSound.h" compile="0" resource="0"
-              file="Source/Synthesizer/WavetableSynthesizerSound.h"/>
-        <FILE id="JJB9A8" name="WavetableSynthesizerVoice.cpp" compile="1"
-              resource="0" file="Source/Synthesizer/WavetableSynthesizerVoice.cpp"/>
-        <FILE id="Rk59mw" name="WavetableSynthesizerVoice.h" compile="0" resource="0"
-              file="Source/Synthesizer/WavetableSynthesizerVoice.h"/>
       </GROUP>
       <FILE id="qMYAla" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

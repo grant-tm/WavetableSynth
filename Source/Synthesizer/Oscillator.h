@@ -2,10 +2,11 @@
 #define OSCILLATOR_H
 
 #include <JuceHeader.h>
-#include "WavetableSynthesizerVoice.h"
 
 #define MAX_DETUNE_VOICES 12
 #define MAX_DETUNE_SPREAD_PROPORTIONAL 0.05f
+
+using Wavetable = juce::AudioBuffer<float>;
 
 class Oscillator
 {
