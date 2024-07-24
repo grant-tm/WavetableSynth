@@ -19,6 +19,7 @@ Oscillator::Oscillator()
     deltaPhase = 0.f;
     sampleIndex = 0;
     sampleOffset = 0.f;
+    sampleOffset = 0.f;
 
     // SETTABLE RENDER PARAMETERS
     enable = false;
@@ -26,21 +27,22 @@ Oscillator::Oscillator()
     baseFrequency = 0.f;
     baseVolume = 0.f;
     basePan = 0.f;
+    velocity = 1.f;
 
     // DEPENDENT RENDER PARAMETERS
-    renderFrequency = 0.f;
-    renderVolume = 0.f;
-    renderPanCoefficientLeft = 0.f;
-    renderPanCoefficientRight = 0.f;
+    renderFrequency = 150.f;
+    renderVolume = 1.f;
+    renderPanCoefficientLeft = 1.f;
+    renderPanCoefficientRight = 1.f;
 
     // DETUNE PARAMETERS
     detuneVoices = 1;
-    detuneMix = 0.f;
-    detuneSpread = 0.f;
+    detuneMix = 1.f;
+    detuneSpread = 1.f;
     for (int i = 0; i < MAX_DETUNE_VOICES; i++)
     {
-        detuneFrequencyOffsets[i] = 0;
-        detuneVolumeCoefficients[i] = 0;
+        detuneFrequencyCoefficients[i] = 1;
+        detuneVolumeCoefficients[i] = 1;
     }
 }
 
@@ -64,24 +66,26 @@ void Oscillator::render(juce::AudioBuffer<float> &outputBuffer, int startSample,
     auto output = outputBuffer.getArrayOfWritePointers();
     for (int detuneVoice = 0; detuneVoice < this->detuneVoices; detuneVoice++)
     {
+        //passthroughBaseRenderParameters();
         setRenderParametersForDetunedVoice(detuneVoice);
+        
         updateDeltaPhase();
 
         // render the damn wave!
         for (int sampleIndex = startSample; sampleIndex < (startSample + numSamples); sampleIndex++)
         {
             incrementPhase(detuneVoice);
-            auto sampleValue = getNextSample();
-            output[0][sampleIndex] = sampleValue * renderPanCoefficientLeft;
-            output[1][sampleIndex] = sampleValue * renderPanCoefficientRight;
+            auto sampleValue = getNextSample() * renderVolume * velocity;
+            output[0][sampleIndex] += sampleValue * renderPanCoefficientLeft;
+            output[1][sampleIndex] += sampleValue * renderPanCoefficientRight;
         }
     }
 
-    /*for (int sampleIndex = startSample; sampleIndex < (startSample + numSamples); sampleIndex++)
+    for (int sampleIndex = startSample; sampleIndex < (startSample + numSamples); sampleIndex++)
     {
-        output[0][sampleIndex] /= this->detuneVoices;
-        output[1][sampleIndex] /= this->detuneVoices;
-    }*/
+        output[0][sampleIndex] /= detuneVoices;
+        output[1][sampleIndex] /= detuneVoices;
+    }
 }
 
 // interpolate sample from current wave phase
@@ -143,6 +147,11 @@ void Oscillator::updateDeltaPhase()
 //-------------------------------------
 // enable
 
+bool Oscillator::isEnabled()
+{
+    return enable;
+}
+
 void Oscillator::setEnable(bool newEnable)
 {
     enable = newEnable;
@@ -185,6 +194,18 @@ void Oscillator::setVolume(float newVolume)
 }
 
 //-------------------------------------
+// velocity
+
+void Oscillator::setVelocity(float newVelocity)
+{
+    // limit velocity to [0, 1]
+    newVelocity = juce::jmax(0.f, newVelocity);
+    newVelocity = juce::jmin(1.f, newVelocity);
+
+    this->velocity = newVelocity;
+}
+
+//-------------------------------------
 // pan
 
 void Oscillator::setPan(float newPan)
@@ -220,73 +241,92 @@ void Oscillator::setWavetableFrameIndex(int newFrameIndex)
 
 //-------------------------------------
 // detune num voices
+
 void Oscillator::setDetuneVoices(int newNumVoices)
 {
+    // limit newNumVoices to [1, MAX_DETUNE_VOICES]
     newNumVoices = std::max(1, newNumVoices);
     newNumVoices = std::min(MAX_DETUNE_VOICES, newNumVoices);
     
     this->detuneVoices = newNumVoices;
-    updateDetuneVoiceConfiguration();
 };
 
+int Oscillator::getDetuneVoices()
+{
+    return detuneVoices;
+}
+
 //-------------------------------------
-// detune frequency offsets
+// detune mix
 
 void Oscillator::setDetuneMix(float newDetuneMix)
 {
+    // limit newDetuneMix to [0, 1]
     newDetuneMix = std::max(0.f, newDetuneMix);
     newDetuneMix = std::min(1.f, newDetuneMix);
 
     this->detuneMix = newDetuneMix;
-    updateDetuneVoiceConfiguration();
-
 }
 
+float Oscillator::getDetuneMix()
+{
+    return detuneMix;
+}
+
+
 //-------------------------------------
-// detune frequency offsets
+// detune spread
+
 void Oscillator::setDetuneSpread(float newDetuneSpread)
 {
+    // limit newDetuneSpread to [0, 1]
     newDetuneSpread = std::max(0.f, newDetuneSpread);
     newDetuneSpread = std::min(1.f, newDetuneSpread);
 
     this->detuneMix = newDetuneSpread;
-    updateDetuneVoiceConfiguration();
+}
+
+float Oscillator::getDetuneSpread()
+{
+    return detuneSpread;
 }
 
 //=============================================================================
 // DETUNE DEPENDENT VALUES
 
 //--------------------------------------
-// recalcualte all dependent values
+// recalculate all dependent values
 
 void Oscillator::updateDetuneVoiceConfiguration()
 {
-    calculateDetuneFrequencyOffsets();
+    calculateDetuneFrequencyCoefficients();
     calculateDetuneVolumeCoefficients();
-    calculateDetunePanningValues();
+    calculateDetunePanningOffsets();
 }
 
 //-------------------------------------
-// detune frequency offsets
+// detune frequency coefficients
 
-void Oscillator::calculateDetuneFrequencyOffsets()
+void Oscillator::calculateDetuneFrequencyCoefficients()
 {
-    auto spread = MAX_DETUNE_SPREAD_PROPORTIONAL * detuneSpread;
-    auto spreadPerLayer = spread / std::floor(detuneVoices / 2);
     int numVoicesAssigned = 0;
 
     // if odd number of voices, assign baseFrequency to center voice
     if (detuneVoices % 2 != 0)
     {
-        detuneFrequencyOffsets[numVoicesAssigned++] = baseFrequency;
+        detuneFrequencyCoefficients[numVoicesAssigned++] = 1.f;
     }
 
-    // assign frequency offsets to remaining voices
-    int numOuterVoicePairsToCreate = (detuneVoices - numVoicesAssigned) / 2;
-    for (int voicePair = 1; voicePair < numOuterVoicePairsToCreate; voicePair++)
+    // assign frequency coefficients to remaining voices
+    const float maxFrequencyCoefficient = MAX_DETUNE_SPREAD_PROPORTIONAL * detuneSpread;
+    float frequencyStep = maxFrequencyCoefficient / std::floor(detuneVoices / 2);
+    
+    int numVoicePairsToCreate = (detuneVoices - numVoicesAssigned) / 2;
+    for (int voicePair = 1; voicePair <= numVoicePairsToCreate; voicePair++)
     {
-        detuneFrequencyOffsets[numVoicesAssigned++] = baseFrequency - (spreadPerLayer * voicePair);
-        detuneFrequencyOffsets[numVoicesAssigned++] = baseFrequency + (spreadPerLayer * voicePair);
+        float frequencyCoefficient = frequencyStep * voicePair;
+        detuneFrequencyCoefficients[numVoicesAssigned++] = -frequencyCoefficient;
+        detuneFrequencyCoefficients[numVoicesAssigned++] = frequencyCoefficient;
     }
 }
 
@@ -297,45 +337,48 @@ void Oscillator::calculateDetuneVolumeCoefficients()
 {
     int numVoicesAssigned = 0;
 
-    // if odd number of voices, assign baseVolume to center voice
-    if (detuneVoices % 2 != 0)
+    // create 1 center voice
+    detuneVolumeCoefficients[numVoicesAssigned++] = 1;
+
+    // even num voices: create a 2nd center voice
+    if (detuneVoices % 2 == 0)
     {
-        detuneVolumeCoefficients[numVoicesAssigned++] = baseVolume;
+        detuneVolumeCoefficients[numVoicesAssigned++] = 1;
     }
 
     // assign mixed volume to remaining voices
-    int numOuterVoicePairsToCreate = (detuneVoices - numVoicesAssigned) / 2;
-    for (int voicePair = 1; voicePair < numOuterVoicePairsToCreate; voicePair++)
+    int numVoicePairsToCreate = (detuneVoices - numVoicesAssigned) / 2;
+    for (int voicePair = 1; voicePair <= numVoicePairsToCreate; voicePair++)
     {
-        detuneVolumeCoefficients[numVoicesAssigned++] = baseVolume * detuneMix;
-        detuneVolumeCoefficients[numVoicesAssigned++] = baseVolume * detuneMix;
+        detuneVolumeCoefficients[numVoicesAssigned++] = detuneMix;
+        detuneVolumeCoefficients[numVoicesAssigned++] = detuneMix;
     }
 }
 
 //-------------------------------------
 // detune panning values
 
-void Oscillator::calculateDetunePanningValues()
+void Oscillator::calculateDetunePanningOffsets()
 {
-    auto spread = 1.f * detuneSpread;
-    auto spreadPerLayer = (2 * spread) / detuneVoices;
     int numVoicesAssigned = 0;
 
     // if odd number of voices, assign basePan to center voice
     if (detuneVoices % 2 != 0)
     {
-        detunePanningValues[numVoicesAssigned++] = basePan;
+        detunePanningOffsets[numVoicesAssigned++] = basePan;
     }
 
-    // assign shifted pan to remaining voices
-    int numOuterVoicePairsToCreate = (detuneVoices - numVoicesAssigned) / 2;
-    for (int voicePair = 1; voicePair < numOuterVoicePairsToCreate; voicePair++)
+    // pan offsets are symmetrically distributed around 0
+    const float maxPanningOffset = 0.5f * detuneSpread;
+    float panningStep = maxPanningOffset / std::floor(detuneVoices / 2.0);
+
+    int numVoicePairsToCreate = (detuneVoices - numVoicesAssigned) / 2;
+    for (int voicePair = 1; voicePair <= numVoicePairsToCreate; ++voicePair)
     {
-        float panCoefficient = basePan + ((float) voicePair * spreadPerLayer);
-        panCoefficient = std::max(-1.f, panCoefficient);
-        panCoefficient = std::min(1.f, panCoefficient);
-        detunePanningValues[numVoicesAssigned++] = -panCoefficient;
-        detunePanningValues[numVoicesAssigned++] = panCoefficient;
+        float panOffset = panningStep * voicePair;
+        detunePanningOffsets[numVoicesAssigned++] = -panOffset;
+        detunePanningOffsets[numVoicesAssigned++] = panOffset;
+
     }
 }
 
@@ -344,11 +387,23 @@ void Oscillator::calculateDetunePanningValues()
 
 void Oscillator::setRenderParametersForDetunedVoice(int detuneVoice)
 {
-    renderFrequency = baseFrequency + detuneFrequencyOffsets[detuneVoice];
+    renderFrequency = baseFrequency * detuneFrequencyCoefficients[detuneVoice];
     
     renderVolume = baseVolume * detuneVolumeCoefficients[detuneVoice];
 
-    auto renderPan = basePan * detunePanningValues[detuneVoice];
+    // TODO fix basepan + detune
+    auto renderPan = basePan + detunePanningOffsets[detuneVoice];
+    renderPanCoefficientLeft = std::cos((juce::MathConstants<float>::pi / 4.0f) * (1.0f + renderPan));
+    renderPanCoefficientRight = std::sin((juce::MathConstants<float>::pi / 4.0f) * (1.0f + renderPan));
+}
+
+void Oscillator::passthroughBaseRenderParameters()
+{
+    renderFrequency = baseFrequency;
+
+    renderVolume = baseVolume;
+
+    auto renderPan = basePan;
     renderPanCoefficientLeft = std::cos((juce::MathConstants<float>::pi / 4.0f) * (1.0f + renderPan));
     renderPanCoefficientRight = std::sin((juce::MathConstants<float>::pi / 4.0f) * (1.0f + renderPan));
 }

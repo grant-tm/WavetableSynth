@@ -5,52 +5,63 @@
 #include "WavetableSynthesizerVoice.h"
 
 #define MAX_DETUNE_VOICES 12
-#define MAX_DETUNE_SPREAD_PROPORTIONAL 0.01f
+#define MAX_DETUNE_SPREAD_PROPORTIONAL 0.5f
 
 class Oscillator
 {
-//=============================================================================
-// CONSTRUCTORS / DESTRUCTORS
 
 public:
-	
+
+	//=============================================================================
+	// CONSTRUCTORS / DESTRUCTORS
 	Oscillator();
 	Oscillator(const Wavetable *);
 	~Oscillator();
 
-//=============================================================================
-// RENDERING
-
-public:
-	
+	//=============================================================================
+	// RENDERING
 	void render(juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples);
 
-private:
-
-	float phases[MAX_DETUNE_VOICES];
-	float deltaPhase;
-
-	void incrementPhase(int);
-	void updateDeltaPhase();
-
-	float getNextSample();
-	void setRenderParametersForDetunedVoice();
-
-//=============================================================================
-// RENDERING PARAMETERS
-
-public:
+	//=============================================================================
+	// RENDERING PARAMETERS
+	bool isEnabled();
 	void setEnable(bool);
 	void setSampleRate(float);
 	void setFrequency(float);
 	void setVolume(float);
+	void setVelocity(float);
 	void setPan(float);
 
+	//=============================================================================
+	// WAVETABLE
+
+	void setWavetable(const Wavetable *);
+	void setWavetableFrameIndex(int);
+
+	//=============================================================================
+	// DETUNE
+	void setDetuneVoices(int);
+	void setDetuneMix(float);
+	void setDetuneSpread(float);
+
+	int getDetuneVoices();
+	float getDetuneMix();
+	float getDetuneSpread();
+
+	void updateDetuneVoiceConfiguration();
+
 private:
+
+	//=============================================================================
+	// DATA
+
+	// render parameters
+
 	float sampleRate;
 	bool  enable;
 	float baseFrequency;
 	float baseVolume;
+	float velocity;
 	float basePan;
 
 	float renderFrequency;
@@ -58,15 +69,10 @@ private:
 	float renderPanCoefficientLeft;
 	float renderPanCoefficientRight;
 
-//=============================================================================
-// WAVETABLE
+	float phases[MAX_DETUNE_VOICES];
+	float deltaPhase;
 
-public:
-
-	void setWavetable(const Wavetable *);
-	void setWavetableFrameIndex(int);
-
-private:
+	// wavetable
 
 	const Wavetable *wavetable;
 	int wavetableSize;
@@ -75,35 +81,31 @@ private:
 	int sampleIndex;
 	float sampleOffset;
 
-//=============================================================================
-// DETUNE PARAMETERS
+	// detune
 
-public:
-
-	void setDetuneVoices(int);
-	void setDetuneMix(float);
-	void setDetuneSpread(float);
-
-private:
-
-	int detuneVoices;
+	int   detuneVoices;
 	float detuneMix;
 	float detuneSpread;
+	float detuneFalloff;
 
-//=============================================================================
-// DETUNE DEPENDENT VALUES
-
-private:
-
-	float detuneFrequencyOffsets[MAX_DETUNE_VOICES];
+	float detuneFrequencyCoefficients[MAX_DETUNE_VOICES];
 	float detuneVolumeCoefficients[MAX_DETUNE_VOICES];
-	float detunePanningValues[MAX_DETUNE_VOICES];
+	float detunePanningOffsets[MAX_DETUNE_VOICES];
 
-	void updateDetuneVoiceConfiguration();
-	void calculateDetuneFrequencyOffsets();
+	//=============================================================================
+	// FUNCTIONS
+
+	void incrementPhase(int);
+	void updateDeltaPhase();
+	float getNextSample();
+
+	void calculateDetuneFrequencyCoefficients();
 	void calculateDetuneVolumeCoefficients();
-	void calculateDetunePanningValues();
+	void calculateDetunePanningOffsets();
+
 	void setRenderParametersForDetunedVoice(int);
+	void passthroughBaseRenderParameters();
+
 
 };
 
