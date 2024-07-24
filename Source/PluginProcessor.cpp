@@ -130,7 +130,7 @@ oversamplingEngine(2, (size_t)std::log(oversampleCoefficient), juce::dsp::Oversa
 #endif
 {
     Wavetable wavetable;
-    generateSawWavetable(wavetable, 512);
+    generateSineFrames(wavetable, 512);
     //const Wavetable *wavetableRef = &wavetable;
     synthesizer.setWavetable(wavetable);
     //osc.setWavetable(wavetableRef);
@@ -260,8 +260,14 @@ void WavetableSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     synthesizer.setVolume(valueTree.getRawParameterValue("OSC_VOLUME")->load());
     synthesizer.setPan(valueTree.getRawParameterValue("OSC_PANNING")->load());
     
+    synthesizer.setDetuneVoices(1);
+    synthesizer.setDetuneSpread(0.4f);
     synthesizer.setDetuneMix(valueTree.getRawParameterValue("OSC_DETUNE_MIX")->load());
-   
+
+
+    auto wavetablePositionKnobValue = valueTree.getRawParameterValue("OSC_WAVETABLE_POSITION")->load();
+    auto wavetablePosition = std::floor(wavetablePositionKnobValue * (std::max(0, synthesizer.getNumWavetableFrames() - 1)));
+    valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->store(wavetablePosition);
     synthesizer.setWavetableFrameIndex(valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->load());
     
     synthesizer.processBlock(buffer, midiMessages);
@@ -336,7 +342,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout WavetableSynthAudioProcessor
 
     // osc detune mix
     auto oscDetuneMixRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f);
-    layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_DETUNE_MIX", "OSC_DETUNE_MIX", oscDetuneMixRange, 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_DETUNE_MIX", "OSC_DETUNE_MIX", oscDetuneMixRange, 1.f));
 
     // osc warp amount
     auto oscWarpAmountRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f);
@@ -345,14 +351,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout WavetableSynthAudioProcessor
     // osc wavetable position
     auto oscWavetablePositionRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f);
     layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_WAVETABLE_POSITION", "OSC_WAVETABLE_POSITION", oscWavetablePositionRange, 0.f));
-
-    // osc wavetable frames
-    //auto oscWavetableNumFramesRange = juce::NormalisableRange<int>(0, 256, 1, 1);
-    //layout.add(std::make_unique<juce::AudioParameterInt>("OSC_WAVETABLE_NUM_FRAMES", "OSC_WAVETABLE_NUM_FRAMES", oscWavetableNumFramesRange, 0));
     layout.add(std::make_unique<juce::AudioParameterInt>("OSC_WAVETABLE_NUM_FRAMES", "OSC_WAVETABLE_NUM_FRAMES", 0, 256, 0));
-
-
-    //auto oscWavetableCurrentFrameRange = juce::NormalisableRange<int>(0, 512, 1, 1);
     layout.add(std::make_unique<juce::AudioParameterInt>("OSC_WAVETABLE_CURRENT_FRAME", "OSC_WAVETABLE_CURRENT_FRAME", 0, 512, 0));
 
     return layout;

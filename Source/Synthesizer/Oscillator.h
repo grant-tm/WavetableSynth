@@ -5,7 +5,7 @@
 #include "WavetableSynthesizerVoice.h"
 
 #define MAX_DETUNE_VOICES 12
-#define MAX_DETUNE_SPREAD_PROPORTIONAL 0.5f
+#define MAX_DETUNE_SPREAD_PROPORTIONAL 0.05f
 
 class Oscillator
 {
@@ -13,17 +13,14 @@ class Oscillator
 public:
 
 	//=============================================================================
-	// CONSTRUCTORS / DESTRUCTORS
 	Oscillator();
 	Oscillator(const Wavetable *);
 	~Oscillator();
 
 	//=============================================================================
-	// RENDERING
+	
 	void render(juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples);
 
-	//=============================================================================
-	// RENDERING PARAMETERS
 	bool isEnabled();
 	void setEnable(bool);
 	void setSampleRate(float);
@@ -33,29 +30,24 @@ public:
 	void setPan(float);
 
 	//=============================================================================
-	// WAVETABLE
-
-	void setWavetable(const Wavetable *);
-	void setWavetableFrameIndex(int);
-
-	//=============================================================================
-	// DETUNE
 	void setDetuneVoices(int);
 	void setDetuneMix(float);
 	void setDetuneSpread(float);
 
-	int getDetuneVoices();
+	int   getDetuneVoices();
 	float getDetuneMix();
 	float getDetuneSpread();
 
 	void updateDetuneVoiceConfiguration();
 
+	//=============================================================================
+
+	void setWavetable(const Wavetable *);
+	void setWavetableFrameIndex(int);
+
 private:
 
 	//=============================================================================
-	// DATA
-
-	// render parameters
 
 	float sampleRate;
 	bool  enable;
@@ -72,16 +64,7 @@ private:
 	float phases[MAX_DETUNE_VOICES];
 	float deltaPhase;
 
-	// wavetable
-
-	const Wavetable *wavetable;
-	int wavetableSize;
-	int wavetableNumFrames;
-	int wavetableFrameIndex;
-	int sampleIndex;
-	float sampleOffset;
-
-	// detune
+	//=============================================================================
 
 	int   detuneVoices;
 	float detuneMix;
@@ -93,7 +76,15 @@ private:
 	float detunePanningOffsets[MAX_DETUNE_VOICES];
 
 	//=============================================================================
-	// FUNCTIONS
+
+	const Wavetable *wavetable;
+	int wavetableSize;
+	int wavetableNumFrames;
+	int wavetableFrameIndex;
+	int sampleIndex;
+	float sampleOffset;
+
+	//=============================================================================
 
 	void incrementPhase(int);
 	void updateDeltaPhase();
@@ -103,9 +94,9 @@ private:
 	void calculateDetuneVolumeCoefficients();
 	void calculateDetunePanningOffsets();
 
-	void setRenderParametersForDetunedVoice(int);
-	void passthroughBaseRenderParameters();
-
+	void applyRenderParameters(int);
+	void applyDetuneRenderParameters(int);
+	void applyBaseRenderParameters();
 
 };
 

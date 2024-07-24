@@ -78,7 +78,6 @@ public:
     Wavetable wavetable;
     Oscillator osc;
 
-
 private:
     const int oversampleCoefficient = 8;
     juce::dsp::Oversampling<float> oversamplingEngine;

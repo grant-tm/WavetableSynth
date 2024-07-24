@@ -118,7 +118,7 @@ void Synthesizer::updateOscillatorParameters(Oscillator& oscillator)
     oscillator.setPan(pan);
 
     oscillator.setWavetable(getWavetableReadPointer());
-    oscillator.setWavetableFrameIndex(0);
+    oscillator.setWavetableFrameIndex(wavetableFrameIndex);
 
     oscillator.setDetuneVoices(detuneVoices);
     oscillator.setDetuneMix(detuneMix);
@@ -180,6 +180,7 @@ void Synthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffe
 
     oscillators[0].setVolume(volume);
     oscillators[0].setPan(pan);
+    oscillators[0].setWavetableFrameIndex(wavetableFrameIndex);
 
     updateOscillatorDetuneIfChanged(0);
 
@@ -199,22 +200,20 @@ void Synthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffe
 
     // render the rest of the block
     render(buffer, currentSample, buffer.getNumSamples() - currentSample);
-
-    
 }
 
 void Synthesizer::updateOscillatorDetuneIfChanged(int oscillatorId)
 {
-    auto oscillator = oscillators[oscillatorId];
+    Oscillator* oscillator = oscillators + oscillatorId;
 
-    if (oscillator.getDetuneVoices() != detuneVoices ||
-        oscillator.getDetuneMix()    != detuneMix    ||
-        oscillator.getDetuneSpread() != detuneSpread )
+    if (oscillator->getDetuneVoices() != detuneVoices ||
+        oscillator->getDetuneMix()    != detuneMix    ||
+        oscillator->getDetuneSpread() != detuneSpread )
     {
-        oscillator.setDetuneVoices(detuneVoices);
-        oscillator.setDetuneMix(detuneMix);
-        oscillator.setDetuneSpread(detuneSpread);
-        oscillator.updateDetuneVoiceConfiguration();
+        oscillator->setDetuneVoices(detuneVoices);
+        oscillator->setDetuneMix(detuneMix);
+        oscillator->setDetuneSpread(detuneSpread);
+        oscillator->updateDetuneVoiceConfiguration();
     }
 }
 
