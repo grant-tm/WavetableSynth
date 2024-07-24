@@ -131,20 +131,7 @@ oversamplingEngine(2, (size_t)std::log(oversampleCoefficient), juce::dsp::Oversa
 {
     Wavetable wavetable;
     generateSineFrames(wavetable, 512);
-    //const Wavetable *wavetableRef = &wavetable;
     synthesizer.setWavetable(wavetable);
-    //osc.setWavetable(wavetableRef);
-
-    //synthesizer.setWavetable(wavetable);
-    //synthesizer.setNoteStealingEnabled(true);
-
-    //synthesizer.stateValueTree = &valueTree;
-
-    //synthesizer.clearVoices();
-    //synthesizer.addVoice(new WavetableSynthesizerVoice(synthesizer.getWavetableReadPointer()));
-
-    //synthesizer.clearSounds();
-    //synthesizer.addSound(new WavetableSynthesizerSound());
 }
 
 WavetableSynthAudioProcessor::~WavetableSynthAudioProcessor()
@@ -215,12 +202,10 @@ void WavetableSynthAudioProcessor::changeProgramName (int index, const juce::Str
 //==============================================================================
 void WavetableSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    
     synthesizer.setSampleRate(sampleRate);
     synthesizer.initializeOscillators();
    
-
-    //oversamplingEngine.initProcessing(static_cast<size_t>(samplesPerBlock));
+    oversamplingEngine.initProcessing(static_cast<size_t>(samplesPerBlock));
 }
 
 void WavetableSynthAudioProcessor::releaseResources()
@@ -257,6 +242,8 @@ void WavetableSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    // UPDATE
+
     synthesizer.setVolume(valueTree.getRawParameterValue("OSC_VOLUME")->load());
     synthesizer.setPan(valueTree.getRawParameterValue("OSC_PANNING")->load());
     
@@ -264,33 +251,25 @@ void WavetableSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     synthesizer.setDetuneSpread(0.4f);
     synthesizer.setDetuneMix(valueTree.getRawParameterValue("OSC_DETUNE_MIX")->load());
 
-
     auto wavetablePositionKnobValue = valueTree.getRawParameterValue("OSC_WAVETABLE_POSITION")->load();
     auto wavetablePosition = std::floor(wavetablePositionKnobValue * (std::max(0, synthesizer.getNumWavetableFrames() - 1)));
     valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->store(wavetablePosition);
     synthesizer.setWavetableFrameIndex(valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->load());
     
-    synthesizer.processBlock(buffer, midiMessages);
+    // RENDER
 
-    /*auto volume = valueTree.getRawParameterValue("OSC_VOLUME")->load();
-    osc.setVolume(volume);
-    osc.render(buffer, 0, buffer.getNumSamples());*/
+    juce::dsp::AudioBlock<float> block(buffer);
+    juce::dsp::AudioBlock<float> oversampledBlock = oversamplingEngine.processSamplesUp(block);
 
-    //juce::dsp::AudioBlock<float> block(buffer);
-    //juce::dsp::AudioBlock<float> oversampledBlock = oversamplingEngine.processSamplesUp(block);
+    setLatencySamples(oversamplingEngine.getLatencyInSamples());
 
-    //setLatencySamples(oversamplingEngine.getLatencyInSamples());
+    float* channels[2] = { oversampledBlock.getChannelPointer(0), oversampledBlock.getChannelPointer(1) };
+    juce::AudioBuffer<float> oversampledBuffer{channels, 2, static_cast<int>(oversampledBlock.getNumSamples())};
 
-    //float* channels[2] = { oversampledBlock.getChannelPointer(0), oversampledBlock.getChannelPointer(1) };
-    //juce::AudioBuffer<float> oversampledBuffer{channels, 2, static_cast<int>(oversampledBlock.getNumSamples())};
+    synthesizer.setSampleRate(getSampleRate() * oversampleCoefficient);
+    synthesizer.processBlock(oversampledBuffer, midiMessages);
 
-    //synthesizer.setSampleRate(getSampleRate() * oversampleCoefficient);
-    //synthesizer.processBlock(oversampledBuffer, midiMessages);
-
-    ////osc.setSampleRate(getSampleRate() * oversampleCoefficient);
-    ////osc.render(buffer, 0, buffer.getNumSamples());
-
-    //oversamplingEngine.processSamplesDown(block);
+    oversamplingEngine.processSamplesDown(block);
 }
 
 //==============================================================================
