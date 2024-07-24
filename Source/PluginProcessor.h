@@ -13,6 +13,7 @@
 #include "Synthesizer/WavetableSynthesizer.h"
 #include "Synthesizer/WavetableSynthesizerVoice.h"
 #include "Synthesizer/WavetableSynthesizerSound.h"
+#include "Synthesizer/Synthesizer.h"
 
 #define BODY_COLOR_HEX              0xFF64BEA5
 #define BORDER_COLOR_HEX            0xFF0F1D1F
@@ -71,7 +72,12 @@ public:
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState valueTree{ *this, nullptr, "Parameters", createParameterLayout() };
-    WavetableSynthesizer synthesizer;
+    
+    //WavetableSynthesizer synthesizer;
+    Synthesizer synthesizer;
+    Wavetable wavetable;
+    Oscillator osc;
+
 
 private:
     const int oversampleCoefficient = 8;
