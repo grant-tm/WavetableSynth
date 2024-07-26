@@ -75,10 +75,8 @@ public:
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState valueTree{ *this, nullptr, "Parameters", createParameterLayout() };
-    
-    //WavetableSynthesizer synthesizer;
+
     Synthesizer synthesizer;
-    Wavetable wavetable;
     Oscillator osc;
 
 private:

@@ -71,7 +71,6 @@ private:
 	int   detuneVoices;
 	float detuneMix;
 	float detuneSpread;
-	float detuneFalloff;
 
 	float detuneFrequencyCoefficients[MAX_DETUNE_VOICES];
 	float detuneVolumeCoefficients[MAX_DETUNE_VOICES];
@@ -100,8 +99,6 @@ private:
 	void applyBaseRenderParameters();
 
 	void calculateRenderPanCoefficients(float);
-
-
 };
 
 #endif // OSCILLATOR_H

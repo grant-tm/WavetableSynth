@@ -82,7 +82,7 @@ void generateManySineFrames(Wavetable &tableToFill)
             samples[sampleIndex] = (float) sampleValue;
             currentAngle += angleDelta;
         }
-        angleDelta *= 1.01;
+        angleDelta *= 1.01f;
     }
 }
 
@@ -212,23 +212,29 @@ int WavetableSynthAudioProcessor::getCurrentProgram()
 
 void WavetableSynthAudioProcessor::setCurrentProgram (int index)
 {
+    juce::ignoreUnused(index);
 }
 
 const juce::String WavetableSynthAudioProcessor::getProgramName (int index)
 {
+    juce::ignoreUnused(index);
     return {};
 }
 
 void WavetableSynthAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
+    juce::ignoreUnused(index, newName);
 }
 
 //==============================================================================
 void WavetableSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    synthesizer.setSampleRate(sampleRate);
-   
+    synthesizer.setSampleRate((float) sampleRate);
+
+    oversamplingEngine.setUsingIntegerLatency(true);
     oversamplingEngine.initProcessing(static_cast<size_t>(samplesPerBlock));
+
+    setLatencySamples((int) oversamplingEngine.getLatencyInSamples());
 }
 
 void WavetableSynthAudioProcessor::releaseResources()
@@ -282,9 +288,9 @@ void WavetableSynthAudioProcessor::updateSynthesizerParametersFromValueTree()
     synthesizer.setDetuneMix(valueTree.getRawParameterValue("OSC_DETUNE_MIX")->load());
 
     auto wavetablePositionKnobValue = valueTree.getRawParameterValue("OSC_WAVETABLE_POSITION")->load();
-    auto wavetablePosition = std::floor(wavetablePositionKnobValue * (std::max(0, synthesizer.getNumWavetableFrames() - 1)));
-    valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->store(wavetablePosition);
-    synthesizer.setWavetableFrameIndex(valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->load());
+    int wavetablePosition = (int) std::floor(wavetablePositionKnobValue * (std::max(0, synthesizer.getNumWavetableFrames() - 1)));
+    valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->store((float) wavetablePosition);
+    synthesizer.setWavetableFrameIndex((int) valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->load());
 }
 
 void WavetableSynthAudioProcessor::renderOversampledBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
@@ -292,12 +298,10 @@ void WavetableSynthAudioProcessor::renderOversampledBlock(juce::AudioBuffer<floa
     juce::dsp::AudioBlock<float> block(buffer);
     juce::dsp::AudioBlock<float> oversampledBlock = oversamplingEngine.processSamplesUp(block);
 
-    setLatencySamples(oversamplingEngine.getLatencyInSamples());
-
     float *channels[2] = {oversampledBlock.getChannelPointer(0), oversampledBlock.getChannelPointer(1)};
     juce::AudioBuffer<float> oversampledBuffer{channels, 2, static_cast<int>(oversampledBlock.getNumSamples())};
 
-    synthesizer.setSampleRate(getSampleRate() * oversampleCoefficient);
+    synthesizer.setSampleRate((float) getSampleRate() * oversampleCoefficient);
     synthesizer.processBlock(oversampledBuffer, midiMessages);
 
     oversamplingEngine.processSamplesDown(block);

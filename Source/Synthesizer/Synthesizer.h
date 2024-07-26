@@ -82,7 +82,7 @@ private:
 	float calculateFrequencyFromOffsetMidiNote(int midiNoteNumber, float centsOffset);
 
 	void handleMidiEvent(const juce::MidiMessage &midiMessage);
-	void startNote(int midiNoteNumber, float velocity, int pitchWheelPosition);
+	void startNote(int midiNoteNumber, float velocity);
 	void stopNote(int);
 
 	int findVoice(int) const;

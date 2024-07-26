@@ -2,14 +2,14 @@
 
 inline int clampInt (int input, int lowerBound, int upperBound)
 {
-    input = std::max(lowerBound, input);
-    return std::min(upperBound, input);
+    input = juce::jmax(lowerBound, input);
+    return juce::jmin(upperBound, input);
 }
 
 inline float clampFloat (float input, float lowerBound, float upperBound)
 {
-    input = std::max(lowerBound, input);
-    return std::min(upperBound, input);
+    input = juce::jmax(lowerBound, input);
+    return juce::jmin(upperBound, input);
 }
 
 //=============================================================================
@@ -226,7 +226,7 @@ void Synthesizer::handleMidiEvent(const juce::MidiMessage &midiMessage)
     {
         auto midiNoteNumber = midiMessage.getNoteNumber();
         auto noteVelocity = midiMessage.getFloatVelocity();
-        startNote(midiNoteNumber, noteVelocity, 0);
+        startNote(midiNoteNumber, noteVelocity);
     }
     else if (midiMessage.isNoteOff())
     {
@@ -234,7 +234,7 @@ void Synthesizer::handleMidiEvent(const juce::MidiMessage &midiMessage)
     }
 }
 
-void Synthesizer::startNote(int midiNoteNumber, float velocity, int pitchWheelPosition)
+void Synthesizer::startNote(int midiNoteNumber, float velocity)
 {
     auto voiceIndex = findVoice(midiNoteNumber);
     if (voiceIndex < 0 || voiceIndex > MAX_POLYPHONY)
@@ -249,7 +249,7 @@ void Synthesizer::startNote(int midiNoteNumber, float velocity, int pitchWheelPo
     voice.age = 0;
 
     auto &oscillator = oscillators[voiceIndex];
-    oscillator.setFrequency(calculateFrequencyFromOffsetMidiNote(midiNoteNumber, pitchWheelPosition));
+    oscillator.setFrequency(calculateFrequencyFromOffsetMidiNote(midiNoteNumber, getPitchBendOffsetCents()));
     oscillator.setVelocity(velocity);
     oscillator.startAdsrEnvelope();
 

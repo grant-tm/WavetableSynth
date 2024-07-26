@@ -1,6 +1,6 @@
 #include "Knob.h"
 
-enum KnobColors
+enum KnobColors : uint32_t
 {
     fillColor = 0xFF528187,
     borderColor = 0xFF0F1D1F,
@@ -123,15 +123,17 @@ void Knob::paint(juce::Graphics& g)
     //---------------------------------------------------------------------
     // DRAW LABEL
     
-    juce::Font labelFont;
+    juce::FontOptions fontOptions;
+    juce::Font labelFont(fontOptions);
     labelFont.setBold(true);
     labelFont.setHeight(16);
     labelFont.setTypefaceName(labelFont.getDefaultMonospacedFontName());
 
     //g.setFont(float(getTextHeight()));
-    auto strWidth = g.getCurrentFont().getStringWidth(knobLabel);
+    //auto strWidth = g.getCurrentFont().getStringWidth(knobLabel);
 
-    Rectangle<float> r(labelBounds.getX(), labelBounds.getY(), labelBounds.getWidth(), labelBounds.getHeight());
+    auto floatLabelBounds = labelBounds.toFloat();
+    Rectangle<float> r(floatLabelBounds.getX(), floatLabelBounds.getY(), floatLabelBounds.getWidth(), floatLabelBounds.getHeight());
     g.setColour(Colour(KnobColors::textColor));
     g.setFont(labelFont);
     g.drawFittedText(knobLabel, r.toNearestInt(), juce::Justification::centred, 1);

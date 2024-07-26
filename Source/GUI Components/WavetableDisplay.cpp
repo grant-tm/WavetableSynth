@@ -74,6 +74,7 @@ void WavetableDisplayComponent::resized()
 
 void WavetableDisplayComponent::parameterValueChanged(int parameterIndex, float newValue)
 {
+    juce::ignoreUnused(parameterIndex, newValue);
     wavetableChanged.set(true);
 }
 
@@ -91,7 +92,7 @@ void WavetableDisplayComponent::timerCallback()
 {    
     if (wavetableChanged.compareAndSetBool(false, true))
     {
-        wavetableCurrentFrameIndex = audioProcessor.valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->load();
+        wavetableCurrentFrameIndex = (int) audioProcessor.valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->load();
         if (wavetableCurrentFrameIndex < 0) {
             wavetableCurrentFrameIndex = 0;
         }
@@ -167,29 +168,29 @@ juce::Path WavetableDisplayComponent::createPathFromWavetable()
     //------------------------------------------------------------------------
     // COPY AUDIO BUFFER
 
-    std::vector<double> mags;
+    std::vector<float> mags;
     mags.reserve(wavetableRef->getNumSamples());
     for (int i = 0; i < wavetableRef->getNumSamples(); i++)
     {
-        mags.push_back((double)wavetableRef->getSample(0, i));
+        mags.push_back((float) wavetableRef->getSample(0, i));
     }
 
     //------------------------------------------------------------------------
     // INITIALIZE CALCULATION VALUES
 
-    auto bounds = getLocalBounds();
-    const double graphYMin = bounds.getBottom();
-    const double graphYMax = bounds.getY();
-    const double baseYPixel = (graphYMin + graphYMax) / 2;
-    const double baseXPixel = bounds.getX();
-    double numXPixels = bounds.getWidth();
+    auto bounds = getLocalBounds().toFloat();
+    const float graphYMin = bounds.getBottom();
+    const float graphYMax = bounds.getY();
+    const float baseYPixel = (graphYMin + graphYMax) / 2;
+    const float baseXPixel = bounds.getX();
+    const float numXPixels = bounds.getWidth();
 
     //------------------------------------------------------------------------
     // LAMBDA TO SCALE Y VALUES
 
-    auto map = [graphYMin, graphYMax](double input)
+    auto map = [graphYMin, graphYMax](float input)
     {
-        return juce::jmap(input, -1.0, 1.0, graphYMin, graphYMax);
+        return juce::jmap(input, -1.f, 1.f, graphYMin, graphYMax);
     };
 
     //------------------------------------------------------------------------
@@ -202,7 +203,6 @@ juce::Path WavetableDisplayComponent::createPathFromWavetable()
     {
         // get sapmle from wavetable
         float wavetablePhase = (float) (x / numXPixels);
-        int wavetableSampleIndex = (int) (wavetablePhase * wavetableRef->getNumSamples());
         float wavetableSampleValue = getLinearlyInterpolatedWavetableSample(wavetablePhase);
 
         // apply scaling factor
@@ -211,7 +211,7 @@ juce::Path WavetableDisplayComponent::createPathFromWavetable()
 
         // calculate pixel coordinates of next path point
         auto pixelCoordX = baseXPixel + x;
-        auto pixelCoordY = (int) map(wavetableSampleValue);
+        auto pixelCoordY = map(wavetableSampleValue);
 
         // add point to path
         wavetableCurve.lineTo(pixelCoordX, pixelCoordY);
@@ -225,12 +225,12 @@ juce::Path WavetableDisplayComponent::createLineLevelPath()
 {
     juce::Path lineLevel;
 
-    auto bounds = getLocalBounds();
-    const double graphYMin = bounds.getBottom();
-    const double graphYMax = bounds.getY();
-    const double baseYPixel = (graphYMin + graphYMax) / 2;
-    const double baseXPixel = bounds.getX();
-    const double numXPixels = bounds.getWidth();
+    auto bounds = getLocalBounds().toFloat();
+    const float graphYMin = bounds.getBottom();
+    const float graphYMax = bounds.getY();
+    const float baseYPixel = (graphYMin + graphYMax) / 2;
+    const float baseXPixel = bounds.getX();
+    const float numXPixels = bounds.getWidth();
 
     lineLevel.startNewSubPath(baseXPixel, baseYPixel);
     lineLevel.lineTo(baseXPixel + numXPixels, baseYPixel);

@@ -24,7 +24,7 @@ public:
 
     // WAVETABLE UPDATE SIGNAL
     void parameterValueChanged(int parameterIndex, float newValue) override;
-    void parameterGestureChanged(int parameterIndex, bool gestureIsStarting) override { };
+    void parameterGestureChanged(int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused(parameterIndex, gestureIsStarting); }
 
 private:
     

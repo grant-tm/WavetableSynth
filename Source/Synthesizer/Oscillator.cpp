@@ -2,14 +2,14 @@
 
 inline int clampInt (int input, int lowerBound, int upperBound)
 {
-    input = std::max(lowerBound, input);
-    return std::min(upperBound, input);
+    input = juce::jmax(lowerBound, input);
+    return juce::jmin(upperBound, input);
 }
 
 inline float clampFloat (float input, float lowerBound, float upperBound)
 {
-    input = std::max(lowerBound, input);
-    return std::min(upperBound, input);
+    input = juce::jmax(lowerBound, input);
+    return juce::jmin(upperBound, input);
 }
 
 //=============================================================================
@@ -17,53 +17,45 @@ inline float clampFloat (float input, float lowerBound, float upperBound)
 
 Oscillator::Oscillator()
 {
-    // WAVETABLE
     wavetable = nullptr;
     wavetableSize = 0;
     wavetableNumFrames = 0;
     wavetableFrameIndex = 0;
 
-    // WAVETABLE POSITION
     for (auto& phase : phases)
     {
-        phase = 0;
+        phase = 0.f;
     }
     deltaPhase = 0.f;
     sampleIndex = 0;
     sampleOffset = 0.f;
     sampleOffset = 0.f;
 
-    // SETTABLE RENDER PARAMETERS
     sampleRate = 0.f;
     baseFrequency = 0.f;
     baseVolume = 0.f;
     basePan = 0.f;
     velocity = 1.f;
 
-    // DEPENDENT RENDER PARAMETERS
     renderFrequency = 150.f;
     renderVolume = 1.f;
     renderPanCoefficientLeft = 1.f;
     renderPanCoefficientRight = 1.f;
 
-    // DETUNE PARAMETERS
     detuneVoices = 1;
     detuneMix = 1.f;
     detuneSpread = 1.f;
-    for (int i = 0; i < MAX_DETUNE_VOICES; i++)
-    {
-        detuneFrequencyCoefficients[i] = 1;
-        detuneVolumeCoefficients[i] = 1;
-    }
-
     for (auto& detuneFrequencyCoefficient : detuneFrequencyCoefficients)
     {
-        detuneFrequencyCoefficient = 1;
+        detuneFrequencyCoefficient = 1.f;
     }
-
-    for (auto& detuneFrequencyCoefficient : detuneFrequencyCoefficients)
+    for (auto& detuneVolumeCoefficient : detuneVolumeCoefficients)
     {
-        detuneFrequencyCoefficient = 1;
+        detuneVolumeCoefficient = 1.f;
+    }
+    for (auto& detunePanningOffset : detunePanningOffsets)
+    {
+        detunePanningOffset = 0.f;
     }
 }
 
@@ -86,15 +78,16 @@ void Oscillator::render(juce::AudioBuffer<float> &outputBuffer, int startSample,
         updateDeltaPhase();
 
         // render the damn wave!
-        for (int sampleIndex = startSample; sampleIndex < (startSample + numSamples); sampleIndex++)
+        for (int outputSampleIndex = startSample; outputSampleIndex < (startSample + numSamples); outputSampleIndex++)
         {
             incrementPhase(detuneVoice);
-            
             auto sampleValue = getNextSample() * renderVolume * velocity / detuneVoices;
+            
+            // apply ADSR envelope
             sampleValue *= adsrEnvelope.isActive() ? adsrEnvelope.getNextSample() : 0.f;
             
-            output[0][sampleIndex] += sampleValue * renderPanCoefficientLeft;
-            output[1][sampleIndex] += sampleValue * renderPanCoefficientRight;
+            output[0][outputSampleIndex] += sampleValue * renderPanCoefficientLeft;
+            output[1][outputSampleIndex] += sampleValue * renderPanCoefficientRight;
         }
     }
 }
@@ -103,25 +96,25 @@ float Oscillator::getNextSample()
 {
     // select 4 samples around sampleIndex
     auto values = wavetable->getReadPointer(wavetableFrameIndex);
-    float val0 = values[(sampleIndex - 1 + wavetableSize) % wavetableSize];
-    float val1 = values[(sampleIndex + 0) % wavetableSize];
-    float val2 = values[(sampleIndex + 1) % wavetableSize];
-    float val3 = values[(sampleIndex + 2) % wavetableSize];
+    const float val0 = values[(sampleIndex - 1 + wavetableSize) % wavetableSize];
+    const float val1 = values[(sampleIndex + 0) % wavetableSize];
+    const float val2 = values[(sampleIndex + 1) % wavetableSize];
+    const float val3 = values[(sampleIndex + 2) % wavetableSize];
 
     // calculate slopes to use at points val1 and val2 (avoid discontinuities)
-    float slope0 = (val2 - val0) * 0.5f;
-    float slope1 = (val3 - val1) * 0.5f;
+    const float slope0 = (val2 - val0) * 0.5f;
+    const float slope1 = (val3 - val1) * 0.5f;
 
     // calculate interpolation coefficients
-    float delta = val1 - val2;
-    float slopeSum = slope0 + delta;
-    float coefficientA = slopeSum + delta + slope1;
-    float coefficientB = slopeSum + coefficientA;
+    const float delta = val1 - val2;
+    const float slopeSum = slope0 + delta;
+    const float coefficientA = slopeSum + delta + slope1;
+    const float coefficientB = slopeSum + coefficientA;
 
     // perform interpolation
-    float stage1 = coefficientA * sampleOffset - coefficientB;
-    float stage2 = stage1 * sampleOffset + slope0;
-    float result = stage2 * sampleOffset + val1;
+    const float stage1 = coefficientA * sampleOffset - coefficientB;
+    const float stage2 = stage1 * sampleOffset + slope0;
+    const float result = stage2 * sampleOffset + val1;
 
     return result;
 }
@@ -200,7 +193,7 @@ void Oscillator::calculateDetuneFrequencyCoefficients()
 
     // assign frequency coefficients to remaining voices
     const float maxFrequencyCoefficient = MAX_DETUNE_SPREAD * detuneSpread;
-    float frequencyStep = maxFrequencyCoefficient / std::floor(detuneVoices / 2);
+    float frequencyStep = maxFrequencyCoefficient / (float) std::floor(detuneVoices / 2);
 
     int numVoicePairsToCreate = (detuneVoices - numVoicesAssigned) / 2;
     for (int voicePair = 1; voicePair <= numVoicePairsToCreate; voicePair++)
@@ -250,7 +243,7 @@ void Oscillator::calculateDetunePanningOffsets()
     const float maxPanningOffset = 0.5f * detuneSpread;
 
     // panning step is the panning offset for the next further out pair of voices
-    float panningStep = maxPanningOffset / std::floor(detuneVoices / 2.0);
+    float panningStep = maxPanningOffset / (float) std::floor(detuneVoices / 2.0);
 
     // create voices
     int numVoicePairsToCreate = (detuneVoices - numVoicesAssigned) / 2;

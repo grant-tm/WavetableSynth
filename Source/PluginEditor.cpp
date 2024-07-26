@@ -46,7 +46,7 @@ WavetableSynthAudioProcessorEditor::~WavetableSynthAudioProcessorEditor()
 //==============================================================================
 void WavetableSynthAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    g.fillAll (juce::Colour(ColorPalette::body));
+    g.fillAll (juce::Colour((uint32_t) ColorPalette::body));
 }
 
 void WavetableSynthAudioProcessorEditor::resized()
