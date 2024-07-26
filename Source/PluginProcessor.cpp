@@ -243,10 +243,17 @@ void WavetableSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         buffer.clear (i, 0, buffer.getNumSamples());
 
     // UPDATE
+    updateSynthesizerParametersFromValueTree();
+    
+    // RENDER
+    renderOversampledBlock(buffer, midiMessages);
+}
 
+void WavetableSynthAudioProcessor::updateSynthesizerParametersFromValueTree()
+{
     synthesizer.setVolume(valueTree.getRawParameterValue("OSC_VOLUME")->load());
     synthesizer.setPan(valueTree.getRawParameterValue("OSC_PANNING")->load());
-    
+
     synthesizer.setDetuneVoices(1);
     synthesizer.setDetuneSpread(0.4f);
     synthesizer.setDetuneMix(valueTree.getRawParameterValue("OSC_DETUNE_MIX")->load());
@@ -255,15 +262,16 @@ void WavetableSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     auto wavetablePosition = std::floor(wavetablePositionKnobValue * (std::max(0, synthesizer.getNumWavetableFrames() - 1)));
     valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->store(wavetablePosition);
     synthesizer.setWavetableFrameIndex(valueTree.getRawParameterValue("OSC_WAVETABLE_CURRENT_FRAME")->load());
-    
-    // RENDER
+}
 
+void WavetableSynthAudioProcessor::renderOversampledBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+{
     juce::dsp::AudioBlock<float> block(buffer);
     juce::dsp::AudioBlock<float> oversampledBlock = oversamplingEngine.processSamplesUp(block);
 
     setLatencySamples(oversamplingEngine.getLatencyInSamples());
 
-    float* channels[2] = { oversampledBlock.getChannelPointer(0), oversampledBlock.getChannelPointer(1) };
+    float *channels[2] = {oversampledBlock.getChannelPointer(0), oversampledBlock.getChannelPointer(1)};
     juce::AudioBuffer<float> oversampledBuffer{channels, 2, static_cast<int>(oversampledBlock.getNumSamples())};
 
     synthesizer.setSampleRate(getSampleRate() * oversampleCoefficient);
@@ -275,7 +283,7 @@ void WavetableSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
 //==============================================================================
 bool WavetableSynthAudioProcessor::hasEditor() const
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    return true;
 }
 
 juce::AudioProcessorEditor* WavetableSynthAudioProcessor::createEditor()
