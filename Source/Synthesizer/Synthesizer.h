@@ -4,80 +4,56 @@
 #include <JuceHeader.h>
 #include "Oscillator.h"
 
-#define MAX_POLYPHONY 16
+#define MAX_POLYPHONY 2
 
 struct Voice
 {
 	int noteNumber = 0;
-	int order = 0;
+	int age = -1;
 };
 
 class Synthesizer
 {
 public:
 	//==============================================================================
+
 	Synthesizer();
 	~Synthesizer();
-	
-	//==============================================================================
 
+	void updateVoiceAges();
+
+	//==============================================================================
 	void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiBuffer);
+	
+	void setWavetable(Wavetable &);
+	void setWavetableFrameIndex(int);
+	const Wavetable *getWavetableReadPointer() const;
+	int getNumWavetableFrames() const;
 
-	//==============================================================================
-	float getSampleRate();
+	float getSampleRate() const;
 	void setSampleRate(float);
 
 	void setFrequency(float);
 	void setFrequencyByMidiNote(int, float);
-
+	
 	void setVolume(float);
+
 	void setPan(float);
-	//==============================================================================
+
 	void setDetuneVoices(int);
 	void setDetuneMix(float);
 	void setDetuneSpread(float);
 
-	//==============================================================================
-	void initializeOscillators();
-	void updateOscillatorParameters(Oscillator &oscillator);
-	void updateOscillatorDetuneIfChanged(int oscillatorId);
-	
-	//==============================================================================
-	void setWavetable(Wavetable &);
-	void setWavetableFrameIndex(int);
-	const Wavetable *getWavetableReadPointer();
-	int getNumWavetableFrames();
-
-	void mapBufferToRange(juce::AudioBuffer<float> &, int, int);
-	void setAdsrEnvelopeParameters(juce::ADSR::Parameters adsrParameters);
-
-
 private:
-
 	//==============================================================================
-	
-	juce::ADSR::Parameters adsrParameters{0.05f, 1.f, 0.8f, 1.f};
-
-	Oscillator oscillators[MAX_POLYPHONY];
-
-	bool voiceStealingEnabled = false;
-	int maxPolyphony = MAX_POLYPHONY;
-	struct Voice activeVoices[MAX_POLYPHONY];
-	int numVoicesActive = 0;
-
-	void disableInactiveOscillators();
-	int findVoice();
-	int findVoiceToSteal();
-	int findVoicePlayingNote(int);
-
-	//==============================================================================
-
 	Wavetable wavetable;
 	int wavetableSize = 0;
 	int wavetableNumFrames = 0;
 	int wavetableFrameIndex = 0;
 
 	//==============================================================================
+	Oscillator oscillators[MAX_POLYPHONY];
+	juce::ADSR::Parameters adsrParameters{0.05f, 1.f, 0.8f, 1.f};
 
 	float sampleRate = 22100;
 	float frequency = 200;
@@ -89,13 +65,20 @@ private:
 	float detuneSpread = 1;
 
 	//==============================================================================
+	struct Voice activeVoices[MAX_POLYPHONY];
+	bool voiceStealingEnabled = true;
 
 	float pitchBendWheelPosition = 0;
 	int pitchBendUpperBoundSemitones = 2;
 	int pitchBendLowerBoundSemitones = -2;
-	
+
 	//==============================================================================
 	void render(juce::AudioBuffer<float> &buffer, int startSample, int endSample);
+
+	void updateAllOscillators();
+	void initializeOscillators();
+	void updateOscillatorParameters(Oscillator &oscillator);
+	void updateOscillatorDetuneIfChanged(Oscillator &oscillatorId);
 
 	float calculateFrequencyFromMidiInput(int midiNoteNuber, float pitchWheelPosition);
 	float calculateFrequencyFromOffsetMidiNote(int midiNoteNumber, float centsOffset);
@@ -103,13 +86,15 @@ private:
 	void handleMidiEvent(const juce::MidiMessage &midiMessage);
 	void startNote(int midiNoteNumber, float velocity, int pitchWheelPosition);
 	void stopNote(int);
-	void stopAllNotes();
 
-	void pitchWheelMoved(int newPitchWheelValue);
-	void setPitchBendPosition(int position);
-	float getPitchBendOffsetCents();
-	float getPitchBendOffsetCents(float);
+	int findVoice(int) const;
+	int findVoiceToSteal(int) const;
+	int findVoicePlayingNote(int) const;
 
+	void  pitchWheelMoved(int newPitchWheelValue);
+	void  setPitchBendPosition(int position);
+	float getPitchBendOffsetCents() const;
+	float getPitchBendOffsetCents(float) const;
 };
 
 #endif // SYNTHESIZER_H

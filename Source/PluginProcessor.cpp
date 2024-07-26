@@ -203,7 +203,6 @@ void WavetableSynthAudioProcessor::changeProgramName (int index, const juce::Str
 void WavetableSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     synthesizer.setSampleRate(sampleRate);
-    synthesizer.initializeOscillators();
    
     oversamplingEngine.initProcessing(static_cast<size_t>(samplesPerBlock));
 }
