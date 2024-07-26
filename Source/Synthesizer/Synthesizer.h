@@ -41,22 +41,22 @@ public:
 private:
 	//==============================================================================
 	Wavetable wavetable;
-	int wavetableSize = 0;
-	int wavetableNumFrames = 0;
-	int wavetableFrameIndex = 0;
+	int wavetableSize;
+	int wavetableNumFrames;
+	int wavetableFrameIndex;
 
 	//==============================================================================
 	Oscillator oscillators[MAX_POLYPHONY];
-	juce::ADSR::Parameters adsrParameters{0.05f, 1.f, 0.8f, 1.f};
+	juce::ADSR::Parameters adsrParameters;
 
-	float sampleRate = 22100;
-	float frequency = 200;
-	float volume = 1;
-	float pan = 0;
+	float sampleRate;
+	float frequency;
+	float volume;
+	float pan;
 	
-	int detuneVoices = 1;
-	float detuneMix = 1;
-	float detuneSpread = 1;
+	int detuneVoices;
+	float detuneMix;
+	float detuneSpread;
 
 	//==============================================================================
 	struct Voice
@@ -65,11 +65,11 @@ private:
 		int noteNumber = 0;
 		int age = -1;
 	} voices[MAX_POLYPHONY];
-	bool voiceStealingEnabled = true;
+	bool voiceStealingEnabled;
 
-	float pitchBendWheelPosition = 0;
-	int pitchBendUpperBoundSemitones = 2;
-	int pitchBendLowerBoundSemitones = -2;
+	float pitchBendWheelPosition;
+	int pitchBendUpperBoundSemitones;
+	int pitchBendLowerBoundSemitones;
 
 	//==============================================================================
 	void render(juce::AudioBuffer<float> &buffer, int startSample, int endSample);

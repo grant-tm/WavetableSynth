@@ -1,19 +1,53 @@
 #include "Synthesizer.h"
 
+inline int clampInt (int input, int lowerBound, int upperBound)
+{
+    input = std::max(lowerBound, input);
+    return std::min(upperBound, input);
+}
+
+inline float clampFloat (float input, float lowerBound, float upperBound)
+{
+    input = std::max(lowerBound, input);
+    return std::min(upperBound, input);
+}
+
 //=============================================================================
 // PUBLIC CONSTRUCTORS / DESTRUCTORS
 
 Synthesizer::Synthesizer()
 {
+    wavetableSize = 0;
+    wavetableNumFrames = 0;
+    wavetableFrameIndex = 0;
+
+    // initialize oscillators
+    updateOscillators();
+
+    // initialize adsr
+    adsrParameters = juce::ADSR::Parameters(0.05f, 1.f, 0.8f, 1.f);
+
+    sampleRate = 22100.f;
+    frequency = 200.f;
+    volume = 1.f;
+    pan = 0.f;
+
+    detuneVoices = 1;
+    detuneMix = 1.f;
+    detuneSpread = 1.f;
+
+    voiceStealingEnabled = true;
+
+    pitchBendWheelPosition = 0;
+    pitchBendUpperBoundSemitones = 2;
+    pitchBendLowerBoundSemitones = -2;
+
     // initialize voices
     int voiceId = 0;
     for (auto &voice : voices)
     {
         voice.id = voiceId++;
     }
-
-    // initialize oscillators
-    updateOscillators();
 }
 
 //=============================================================================
@@ -24,21 +58,16 @@ float Synthesizer::getSampleRate() const
     return this->sampleRate;
 }
 
+// [0, 192k]
 void Synthesizer::setSampleRate(float newSampleRate)
 {
-    newSampleRate = juce::jmax(0.f, newSampleRate);
-    newSampleRate = juce::jmin(192000.f, newSampleRate);
-
-    this->sampleRate = newSampleRate;
+    this->sampleRate = clampFloat(newSampleRate, 0.f, 192000.f);
 }
 
+// [0, 20k]
 void Synthesizer::setFrequency(float newFrequency)
 {
-    // limit frequnecy to [0, 20k]
-    newFrequency = juce::jmax(0.f, newFrequency);
-    newFrequency = juce::jmin(newFrequency, 20000.f);
-
-    this->frequency = newFrequency;
+    this->frequency = clampFloat(newFrequency, 0.f, 20000.f);
 }
 
 void Synthesizer::setFrequencyByMidiNote(int midiNoteNumber, float pitchWheelPosition)
@@ -47,52 +76,37 @@ void Synthesizer::setFrequencyByMidiNote(int midiNoteNumber, float pitchWheelPos
     setFrequency(newFrequency);
 }
 
+// [0, 1]
 void Synthesizer::setVolume(float newVolume)
 {
-    // limit volume to [0, 1]
-    newVolume = juce::jmax(0.f, newVolume);
-    newVolume = juce::jmin(newVolume, 1.f);
-
-    this->volume = newVolume;
+    this->volume = clampFloat(newVolume, 0.f, 1.f);
 }
 
+// [-1, 1]
 void Synthesizer::setPan(float newPan)
 {
-    // limit pan to [-1, 1]
-    newPan = juce::jmax(-1.f, newPan);
-    newPan = juce::jmin(newPan, 1.f);
-
-    this->pan = newPan;
+    this->pan = clampFloat(newPan, -1.f, 1.f);
 }
 
 //=============================================================================
 // DETUNE PARAMETERS GETTERS & SETTERS
 
+// [1, MAX_DETUNE_VOICES]
 void Synthesizer::setDetuneVoices(int newNumVoices)
 {
-    // limit newNumVoices to [1, MAX_DETUNE_VOICES]
-    newNumVoices = std::max(1, newNumVoices);
-    newNumVoices = std::min(MAX_DETUNE_VOICES, newNumVoices);
-
-    this->detuneVoices = newNumVoices;
+    this->detuneVoices = clampInt(newNumVoices, 1, MAX_DETUNE_VOICES);
 };
 
+// [0, 1]
 void Synthesizer::setDetuneMix(float newDetuneMix)
 {
-    // limit newDetuneMix to [0, 1]
-    newDetuneMix = std::max(0.f, newDetuneMix);
-    newDetuneMix = std::min(1.f, newDetuneMix);
-
-    this->detuneMix = newDetuneMix;
+    this->detuneMix = clampFloat(newDetuneMix, 0.f, 1.f);
 }
 
+// [0, 1]
 void Synthesizer::setDetuneSpread(float newDetuneSpread)
 {
-    // limit newDetuneSpread to [0, 1]
-    newDetuneSpread = std::max(0.f, newDetuneSpread);
-    newDetuneSpread = std::min(1.f, newDetuneSpread);
-
-    this->detuneMix = newDetuneSpread;
+    this->detuneMix = clampFloat(newDetuneSpread, 0.f, 1.f);
 }
 
 //=============================================================================
@@ -123,10 +137,7 @@ void Synthesizer::setWavetable(Wavetable &wavetableToCopy)
 
 void Synthesizer::setWavetableFrameIndex(int newFrameIndex)
 {
-    newFrameIndex = juce::jmax(0, newFrameIndex);
-    newFrameIndex = juce::jmin(wavetableNumFrames, newFrameIndex);
-
-    this->wavetableFrameIndex = newFrameIndex;
+    this->wavetableFrameIndex = clampInt(newFrameIndex, 0, newFrameIndex);
 }
 
 //=============================================================================
@@ -238,7 +249,7 @@ void Synthesizer::startNote(int midiNoteNumber, float velocity, int pitchWheelPo
     voice.age = 0;
 
     auto &oscillator = oscillators[voiceIndex];
-    oscillator.setFrequency(calculateFrequencyFromOffsetMidiNote(midiNoteNumber, 0));
+    oscillator.setFrequency(calculateFrequencyFromOffsetMidiNote(midiNoteNumber, pitchWheelPosition));
     oscillator.setVelocity(velocity);
     oscillator.startAdsrEnvelope();
 
@@ -267,7 +278,6 @@ void Synthesizer::stopNote(int midiNoteNumber)
         return;
     }
 
-    auto &voice = voices[voiceIndex];
     auto &oscillator = oscillators[voiceIndex];
     oscillator.releaseAdsrEnvelope();
 }
@@ -303,26 +313,22 @@ int Synthesizer::findVoice(int midiNoteNumber) const
         return voidId;
     }
 
-    // all voices active!
-    // report no voice availble if voice stealing is disabled
+    // all voices are active; reject input if voice stealing is disabled
     if (!voiceStealingEnabled)
-    {
         return -1;
-    }
 
-    // 3rd choice: steal oldest voice (if allowed)
+    // 3rd choice: steal oldest voice
     if ((voidId = findOldestVoice()) >= 0) {
         return voidId;
     }
 
-    // there is a bug in the voice management system
+    // doomsday
     jassert(false);
-    return voidId;
+    return 0;
 }
 
 int Synthesizer::findVoicePlayingNote(int midiNoteNumber) const
 {
-    // serach for voice playing note
     for (const auto &voice : voices)
     {
         if (voice.noteNumber == midiNoteNumber)
@@ -337,7 +343,6 @@ int Synthesizer::findVoicePlayingNote(int midiNoteNumber) const
 
 int Synthesizer::findFreeVoice() const
 {
-    // serach for voice playing note
     for (const auto &voice : voices)
     {
         if (voice.age == -1)
@@ -346,7 +351,7 @@ int Synthesizer::findFreeVoice() const
         }
     }
 
-    // failed to find voice playing the given note
+    // failed to find free voice
     return -1;
 }
 
@@ -378,35 +383,23 @@ void Synthesizer::pitchWheelMoved(int newPitchWheelValue)
 void Synthesizer::setPitchBendPosition(int position)
 {
     if (position > 8192)
-        pitchBendWheelPosition = (float)(position - 8192.f) / (16383.f - 8192.f);
+        pitchBendWheelPosition = (float) (position - 8192.f) / (16383.f - 8192.f);
     else
-        pitchBendWheelPosition = (float)(8192.f - position) / -8192.f;
+        pitchBendWheelPosition = (float) (8192.f - position) / -8192.f;
 }
 
 float Synthesizer::getPitchBendOffsetCents() const
 {
     if (pitchBendWheelPosition >= 0.0f)
-    {
-        // calculate cents based on position relative to UPPER bound
-        return pitchBendWheelPosition * (float)pitchBendUpperBoundSemitones * 100.f;
-    }
+        return pitchBendWheelPosition * (float) pitchBendUpperBoundSemitones * 100.f;
     else
-    {
-        // calculate cents based on position relative to LOWER lower
-        return pitchBendWheelPosition * (float)pitchBendLowerBoundSemitones * 100.f;
-    }
+        return pitchBendWheelPosition * (float) pitchBendLowerBoundSemitones * 100.f;
 }
 
 float Synthesizer::getPitchBendOffsetCents(float pitchWheelPosition) const
 {
     if (pitchWheelPosition >= 0.0f)
-    {
-        // calculate cents based on position relative to UPPER bound
-        return pitchWheelPosition * (float)pitchBendUpperBoundSemitones * 100.f;
-    }
+        return pitchWheelPosition * (float) pitchBendUpperBoundSemitones * 100.f;
     else
-    {
-        // calculate cents based on position relative to LOWER lower
-        return pitchWheelPosition * (float)pitchBendLowerBoundSemitones * 100.f;
-    }
+        return pitchWheelPosition * (float) pitchBendLowerBoundSemitones * 100.f;
 }
