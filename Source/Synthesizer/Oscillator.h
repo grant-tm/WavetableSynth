@@ -22,8 +22,6 @@ public:
 	
 	void render(juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples);
 
-	bool isEnabled();
-	void setEnable(bool);
 	void setSampleRate(float);
 	void setFrequency(float);
 	void setVolume(float);
@@ -63,7 +61,7 @@ private:
 	//=============================================================================
 
 	float sampleRate;
-	bool  enable;
+
 	float baseFrequency;
 	float baseVolume;
 	float basePan;

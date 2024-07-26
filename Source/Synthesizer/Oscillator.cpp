@@ -22,7 +22,6 @@ Oscillator::Oscillator()
     sampleOffset = 0.f;
 
     // SETTABLE RENDER PARAMETERS
-    enable = false;
     sampleRate = 0.f;
     baseFrequency = 0.f;
     baseVolume = 0.f;
@@ -310,17 +309,6 @@ float Oscillator::getDetuneSpread()
 
 //=============================================================================
 // RENDER PARAMETERS
-
-// enable
-void Oscillator::setEnable(bool newEnable)
-{
-    enable = newEnable;
-}
-
-bool Oscillator::isEnabled()
-{
-    return enable;
-}
 
 // sample rate
 void Oscillator::setSampleRate(float newSampleRate)
