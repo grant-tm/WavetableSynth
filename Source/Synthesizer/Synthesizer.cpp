@@ -97,6 +97,8 @@ void Synthesizer::initializeOscillators()
 {
     for (auto &oscillator : oscillators)
     {
+        oscillator.setAdsrParameters(adsrParameters);
+
         oscillator.setSampleRate(sampleRate);
         oscillator.setFrequency(frequency);
         oscillator.setVolume(volume);
@@ -163,11 +165,42 @@ int Synthesizer::getNumWavetableFrames()
 //=============================================================================
 // RENDER
 
+void Synthesizer::mapBufferToRange(juce::AudioBuffer<float> &buffer, int startSample, int numSamples)
+{
+    float minValue = std::numeric_limits<float>::max();
+    float maxValue = std::numeric_limits<float>::lowest();
+
+    // find min and max values
+    for (int channel = 0; channel < buffer.getNumChannels(); channel++)
+    {
+        const float *channelData = buffer.getReadPointer(channel);
+        for (int sampleIndex = startSample; sampleIndex < (startSample + numSamples); sampleIndex++)
+        {
+            float value = channelData[sampleIndex];
+            if (value < minValue) minValue = value;
+            if (value > maxValue) maxValue = value;
+        }
+    }
+
+    // map values to range -1 to 1
+    for (int channel = 0; channel < buffer.getNumChannels(); channel++)
+    {
+        float *channelData = buffer.getWritePointer(channel);
+        for (int sampleIndex = startSample; sampleIndex < (startSample + numSamples); sampleIndex++)
+        {
+            float value = channelData[sampleIndex];
+            channelData[sampleIndex] = 2.0f * (value - minValue) / (maxValue - minValue) - 1.0f;
+        }
+    }
+}
+
 void Synthesizer::render(juce::AudioBuffer<float> &buffer, int startSample, int numSamples)
 { 
-    for (auto &oscillator : oscillators)
+    buffer.clear(startSample, numSamples);
+
+    for (auto &oscillator : this->oscillators)
     {
-        if (oscillator.isEnabled())
+        if (oscillator.adsrEnvelopeIsActive())
         {
             oscillator.render(buffer, startSample, numSamples);
         }
@@ -179,7 +212,7 @@ void Synthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffe
     auto currentSample = 0;
 
     for (auto& oscillator : oscillators)
-    {
+    {   
         oscillator.setSampleRate(sampleRate);
         oscillator.setVolume(volume);
         oscillator.setPan(pan);
@@ -187,6 +220,7 @@ void Synthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffe
     }
 
     updateOscillatorDetuneIfChanged(0);
+    disableInactiveOscillators();
 
     for (const auto midiData : midiBuffer)
     {
@@ -230,33 +264,105 @@ void Synthesizer::handleMidiEvent(const juce::MidiMessage &midiMessage)
     {
         auto midiNoteNumber = midiMessage.getNoteNumber();
         auto noteVelocity = midiMessage.getFloatVelocity();
-       
-        oscillators[0].setFrequency(calculateFrequencyFromOffsetMidiNote(midiNoteNumber, 0));
-        oscillators[0].setVelocity(noteVelocity);
-        oscillators[0].setEnable(true);
+        startNote(midiNoteNumber, noteVelocity, 0);
     }
     else if (midiMessage.isNoteOff())
     {
+        stopNote(midiMessage.getNoteNumber());
     }
     else if (midiMessage.isAllNotesOff())
     {
-        oscillators[0].setEnable(false);
+        stopAllNotes();
     }
 }
 
-void Synthesizer::startNote(int midiNoteNumber, int velocity, int pitchWheelPosition)
+void Synthesizer::disableInactiveOscillators()
 {
-    oscillators[0].setFrequency(calculateFrequencyFromOffsetMidiNote(midiNoteNumber, 0));
-    oscillators[0].setVelocity(velocity);
-    oscillators[0].setEnable(true);
+    for (auto &oscillator : oscillators)
+    {
+        bool oscillatorIsActive = oscillator.adsrEnvelopeIsActive();
+        oscillator.setEnable(oscillatorIsActive);
+    }
+}
+
+int Synthesizer::findVoice()
+{
+    // serach for an available voice
+    int oscillatorId = 0;
+    for (const auto &oscillator : oscillators)
+    {
+        if (!oscillator.adsrEnvelopeIsActive())
+        {
+            return oscillatorId;
+        }
+        ++oscillatorId;
+    }
+    
+    // didnt find an available voice
+    return voiceStealingEnabled ? findVoiceToSteal() : -1;
+}
+
+int Synthesizer::findVoiceToSteal()
+{
+    // TODO
+    return 0;
+}
+
+int Synthesizer::findVoicePlayingNote(int midiNoteNumber)
+{
+    // serach for voice playing note
+    int oscillatorId = 0;
+    for (const auto &voice : activeVoices)
+    {
+        if (voice.noteNumber == midiNoteNumber)
+        {
+            return oscillatorId;
+        }
+        ++oscillatorId;
+    }
+
+    // failed to find voice playing the given note
+    return -1;
+}
+
+void Synthesizer::startNote(int midiNoteNumber, float velocity, int pitchWheelPosition)
+{
+    auto voiceIndex = findVoice();
+    if (voiceIndex < 0 || voiceIndex > MAX_POLYPHONY)
+    {
+        // reject input
+        //voiceIndex = 0;
+        return;
+    }
+
+    auto& voice = activeVoices[voiceIndex];
+    voice.noteNumber = midiNoteNumber;
+    // set order voice orders
+
+    auto &oscillator = oscillators[voiceIndex];
+    oscillator.setFrequency(calculateFrequencyFromOffsetMidiNote(midiNoteNumber, 0));
+    oscillator.setVelocity(velocity);
+    oscillator.startAdsrEnvelope();
+    
 }
 
 void Synthesizer::stopNote(int midiNoteNumber)
-{
-    auto oscillatorId = 0; // todo add findVoicePlayingNote();
-    auto oscillator = &(oscillators[oscillatorId]);
-    oscillator->setEnable(false);
+{    
+    auto voiceIndex = findVoicePlayingNote(midiNoteNumber);
+    if (voiceIndex < 0 || voiceIndex > MAX_POLYPHONY)
+    {
+        return;
+    }
 
+    auto &voice = activeVoices[voiceIndex];
+    voice.noteNumber = 0;
+
+    auto &oscillator = oscillators[voiceIndex];
+    oscillator.releaseAdsrEnvelope();
+}
+
+void Synthesizer::stopAllNotes()
+{
 }
 
 // pitch wheel move callback: store new position and update frequency

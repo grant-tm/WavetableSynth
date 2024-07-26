@@ -4,6 +4,14 @@
 #include <JuceHeader.h>
 #include "Oscillator.h"
 
+#define MAX_POLYPHONY 16
+
+struct Voice
+{
+	int noteNumber = 0;
+	int order = 0;
+};
+
 class Synthesizer
 {
 public:
@@ -40,16 +48,34 @@ public:
 	const Wavetable *getWavetableReadPointer();
 	int getNumWavetableFrames();
 
+	void mapBufferToRange(juce::AudioBuffer<float> &, int, int);
+	void setAdsrEnvelopeParameters(juce::ADSR::Parameters adsrParameters);
+
+
 private:
 
 	//==============================================================================
 	
-	Oscillator oscillators[4];
+	juce::ADSR::Parameters adsrParameters{0.05f, 1.f, 0.8f, 1.f};
+
+	Oscillator oscillators[MAX_POLYPHONY];
+
+	bool voiceStealingEnabled = false;
+	int maxPolyphony = MAX_POLYPHONY;
+	struct Voice activeVoices[MAX_POLYPHONY];
+	int numVoicesActive = 0;
+
+	void disableInactiveOscillators();
+	int findVoice();
+	int findVoiceToSteal();
+	int findVoicePlayingNote(int);
+
+	//==============================================================================
 
 	Wavetable wavetable;
-	int wavetableSize;
-	int wavetableNumFrames;
-	float wavetableFrameIndex;
+	int wavetableSize = 0;
+	int wavetableNumFrames = 0;
+	int wavetableFrameIndex = 0;
 
 	//==============================================================================
 
@@ -64,9 +90,9 @@ private:
 
 	//==============================================================================
 
-	float pitchBendWheelPosition;
-	int pitchBendUpperBoundSemitones;
-	int pitchBendLowerBoundSemitones;
+	float pitchBendWheelPosition = 0;
+	int pitchBendUpperBoundSemitones = 2;
+	int pitchBendLowerBoundSemitones = -2;
 	
 	//==============================================================================
 	void render(juce::AudioBuffer<float> &buffer, int startSample, int endSample);
@@ -75,13 +101,15 @@ private:
 	float calculateFrequencyFromOffsetMidiNote(int midiNoteNumber, float centsOffset);
 
 	void handleMidiEvent(const juce::MidiMessage &midiMessage);
-	void startNote(int midiNoteNumber, int velocity, int pitchWheelPosition);
+	void startNote(int midiNoteNumber, float velocity, int pitchWheelPosition);
 	void stopNote(int);
+	void stopAllNotes();
 
 	void pitchWheelMoved(int newPitchWheelValue);
 	void setPitchBendPosition(int position);
 	float getPitchBendOffsetCents();
 	float getPitchBendOffsetCents(float);
+
 };
 
 #endif // SYNTHESIZER_H
