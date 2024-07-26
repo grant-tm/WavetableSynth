@@ -1,5 +1,17 @@
 ﻿#include "Oscillator.h"
 
+inline int clampInt (int input, int lowerBound, int upperBound)
+{
+    input = std::max(lowerBound, input);
+    return std::min(upperBound, input);
+}
+
+inline float clampFloat (float input, float lowerBound, float upperBound)
+{
+    input = std::max(lowerBound, input);
+    return std::min(upperBound, input);
+}
+
 //=============================================================================
 // CONSTRUCTORS / DESTRUCTORS
 
@@ -12,9 +24,9 @@ Oscillator::Oscillator()
     wavetableFrameIndex = 0;
 
     // WAVETABLE POSITION
-    for (int i = 0; i < MAX_DETUNE_VOICES; i++)
+    for (auto& phase : phases)
     {
-        phases[i] = 0;
+        phase = 0;
     }
     deltaPhase = 0.f;
     sampleIndex = 0;
@@ -42,6 +54,16 @@ Oscillator::Oscillator()
     {
         detuneFrequencyCoefficients[i] = 1;
         detuneVolumeCoefficients[i] = 1;
+    }
+
+    for (auto& detuneFrequencyCoefficient : detuneFrequencyCoefficients)
+    {
+        detuneFrequencyCoefficient = 1;
+    }
+
+    for (auto& detuneFrequencyCoefficient : detuneFrequencyCoefficients)
+    {
+        detuneFrequencyCoefficient = 1;
     }
 }
 
@@ -110,39 +132,32 @@ float Oscillator::getNextSample()
 void Oscillator::applyRenderParameters(int detuneVoice)
 {
     if (detuneVoices > 1 && detuneMix > 0)
-    {
         applyDetuneRenderParameters(detuneVoice);
-    }
     else
-    {
         applyBaseRenderParameters();
-    }
 }
 
 void Oscillator::applyDetuneRenderParameters(int detuneVoice)
 {
     renderFrequency = baseFrequency * detuneFrequencyCoefficients[detuneVoice];
-
     renderVolume = baseVolume * detuneVolumeCoefficients[detuneVoice];
-
-    auto renderPan = basePan + detunePanningOffsets[detuneVoice];
-    
-    auto leftAngle = (juce::MathConstants<float>::pi / 4.0f) * (1.0f + renderPan);
-    renderPanCoefficientLeft = std::cos(leftAngle);
-    
-    auto rightAngle = (juce::MathConstants<float>::pi / 4.0f) * (1.0f + renderPan);
-    renderPanCoefficientRight = std::sin(rightAngle);
+    calculateRenderPanCoefficients(basePan + detunePanningOffsets[detuneVoice]);
 }
 
 void Oscillator::applyBaseRenderParameters()
 {
     renderFrequency = baseFrequency;
-
     renderVolume = baseVolume;
+    calculateRenderPanCoefficients(basePan);
+}
 
-    auto renderPan = basePan;
-    renderPanCoefficientLeft = std::cos((juce::MathConstants<float>::pi / 4.0f) * (1.0f + renderPan));
-    renderPanCoefficientRight = std::sin((juce::MathConstants<float>::pi / 4.0f) * (1.0f + renderPan));
+void Oscillator::calculateRenderPanCoefficients(float pan)
+{
+    float leftAngle = (juce::MathConstants<float>::pi / 4.0f) * (1.0f + pan);
+    renderPanCoefficientLeft = std::cos(leftAngle);
+
+    float rightAngle = (juce::MathConstants<float>::pi / 4.0f) * (1.0f + pan);
+    renderPanCoefficientRight = std::sin(rightAngle);
 }
 
 //=============================================================================
@@ -156,21 +171,17 @@ void Oscillator::incrementPhase(int phaseIndex)
 
     float scaledPhase = phases[phaseIndex] * wavetableSize;
 
-    sampleIndex = (int)scaledPhase;
-    sampleOffset = scaledPhase - (float)sampleIndex;
+    sampleIndex = (int) scaledPhase;
+    sampleOffset = scaledPhase - (float) sampleIndex;
 }
 
 // calculate and update deltaPhase based on frequency and sampleRate
 void Oscillator::updateDeltaPhase()
 {
     if (sampleRate == 0.f)
-    {
         deltaPhase = 0.f;
-    }
     else
-    {
         deltaPhase = juce::jmax(0.f, renderFrequency / sampleRate);
-    }
 }
 
 //=============================================================================
@@ -188,7 +199,7 @@ void Oscillator::calculateDetuneFrequencyCoefficients()
     }
 
     // assign frequency coefficients to remaining voices
-    const float maxFrequencyCoefficient = MAX_DETUNE_SPREAD_PROPORTIONAL * detuneSpread;
+    const float maxFrequencyCoefficient = MAX_DETUNE_SPREAD * detuneSpread;
     float frequencyStep = maxFrequencyCoefficient / std::floor(detuneVoices / 2);
 
     int numVoicePairsToCreate = (detuneVoices - numVoicesAssigned) / 2;
@@ -263,102 +274,71 @@ void Oscillator::updateDetuneVoiceConfiguration()
 // DETUNE PARAMETERS
 
 // detune num voices
-void Oscillator::setDetuneVoices(int newNumVoices)
-{
-    // limit newNumVoices to [1, MAX_DETUNE_VOICES]
-    newNumVoices = std::max(1, newNumVoices);
-    newNumVoices = std::min(MAX_DETUNE_VOICES, newNumVoices);
-
-    this->detuneVoices = newNumVoices;
-};
-
-int Oscillator::getDetuneVoices()
+int Oscillator::getDetuneVoices() const
 {
     return detuneVoices;
 }
 
-// detune mix
-void Oscillator::setDetuneMix(float newDetuneMix)
+void Oscillator::setDetuneVoices(int newNumVoices)
 {
-    // limit newDetuneMix to [0, 1]
-    newDetuneMix = std::max(0.f, newDetuneMix);
-    newDetuneMix = std::min(1.f, newDetuneMix);
+    this->detuneVoices = clampInt(newNumVoices, 1, MAX_DETUNE_VOICES);
+};
 
-    this->detuneMix = newDetuneMix;
-}
-
-float Oscillator::getDetuneMix()
+// detune mix
+float Oscillator::getDetuneMix() const
 {
     return detuneMix;
 }
 
-// detune spread
-void Oscillator::setDetuneSpread(float newDetuneSpread)
+void Oscillator::setDetuneMix(float newDetuneMix)
 {
-    // limit newDetuneSpread to [0, 1]
-    newDetuneSpread = std::max(0.f, newDetuneSpread);
-    newDetuneSpread = std::min(1.f, newDetuneSpread);
-
-    this->detuneMix = newDetuneSpread;
+    this->detuneMix = clampFloat(newDetuneMix, 0.f, 1.f);
 }
 
-float Oscillator::getDetuneSpread()
+// detune spread
+float Oscillator::getDetuneSpread() const
 {
     return detuneSpread;
+}
+
+void Oscillator::setDetuneSpread(float newDetuneSpread)
+{
+    this->detuneMix = clampFloat(newDetuneSpread, 0.f, 1.f);
 }
 
 //=============================================================================
 // RENDER PARAMETERS
 
-// sample rate
+// sample rate [0, 192000]
 void Oscillator::setSampleRate(float newSampleRate)
 {
-    // limit sample rate to [0, 192k]
-    newSampleRate = juce::jmax(0.f, newSampleRate);
-    newSampleRate = juce::jmin(192000.f, newSampleRate);
-
+    newSampleRate = clampFloat(newSampleRate, 0.f, 192000.f);
     this->sampleRate = newSampleRate;
     this->adsrEnvelope.setSampleRate(newSampleRate);
 }
 
-// frequency
+// frequency [0, 200000]
 void Oscillator::setFrequency(float newFrequency)
 {
-    // limit frequnecy to [0, 20k]
-    newFrequency = juce::jmax(0.f, newFrequency);
-    newFrequency = juce::jmin(20000.f, newFrequency);
-
-    this->baseFrequency = newFrequency;
+    this->baseFrequency = clampFloat(newFrequency, 0.f, 20000.f);
 }
 
-// volume
+// volume [0, 1]
 void Oscillator::setVolume(float newVolume)
 {
-    // limit volume to [0, 1]
-    newVolume = juce::jmax(0.f, newVolume);
-    newVolume = juce::jmin(1.f, newVolume);
-
-    this->baseVolume = newVolume;
+    this->baseVolume = clampFloat(newVolume, 0.f, 1.f);
 }
 
-// velocity
+// velocity [0, 1]
 void Oscillator::setVelocity(float newVelocity)
 {
-    // limit velocity to [0, 1]
-    newVelocity = juce::jmax(0.f, newVelocity);
-    newVelocity = juce::jmin(1.f, newVelocity);
-
-    this->velocity = newVelocity;
+    this->velocity = clampFloat(newVelocity, 0.f, 1.f);
 }
 
-// pan
+// pan [-1, 1]
 void Oscillator::setPan(float newPan)
 {
-    // limit pan to [-1, 1]
-    newPan = juce::jmax(-1.f, newPan);
-    newPan = juce::jmin(1.f, newPan);
-
-    this->basePan = newPan;
+    this->basePan = clampFloat(newPan, -1.f, 1.f);
 }
 
 //=============================================================================
@@ -371,17 +351,14 @@ void Oscillator::setWavetable(const Wavetable *wavetableToUse)
     wavetableNumFrames = wavetable->getNumChannels();
 }
 
+// [0, wavetableNumFrames]
 void Oscillator::setWavetableFrameIndex(int newFrameIndex)
 {
-    // limit new frame index to [0, numFrames]
-    newFrameIndex = juce::jmax(0, newFrameIndex);
-    newFrameIndex = juce::jmin(wavetableNumFrames, newFrameIndex);
-
-    this->wavetableFrameIndex = newFrameIndex;
+    this->wavetableFrameIndex = clampInt(newFrameIndex, 0, wavetableNumFrames);
 }
 
 //=============================================================================
-//
+// ADSR
 
 void Oscillator::setAdsrParameters(juce::ADSR::Parameters adsrParameters)
 {

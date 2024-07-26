@@ -4,7 +4,7 @@
 #include <JuceHeader.h>
 
 #define MAX_DETUNE_VOICES 12
-#define MAX_DETUNE_SPREAD_PROPORTIONAL 0.05f
+#define MAX_DETUNE_SPREAD 0.05f
 
 using Wavetable = juce::AudioBuffer<float>;
 
@@ -19,7 +19,6 @@ public:
 	~Oscillator();
 
 	//=============================================================================
-	
 	void render(juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples);
 
 	void setSampleRate(float);
@@ -33,33 +32,25 @@ public:
 	void setDetuneMix(float);
 	void setDetuneSpread(float);
 
-	int   getDetuneVoices();
-	float getDetuneMix();
-	float getDetuneSpread();
-
+	int   getDetuneVoices() const;
+	float getDetuneMix() const;
+	float getDetuneSpread() const;
 	void updateDetuneVoiceConfiguration();
 
 	//=============================================================================
-
 	void setWavetable(const Wavetable *);
 	void setWavetableFrameIndex(int);
 
 	//=============================================================================
-
 	void setAdsrParameters(juce::ADSR::Parameters adsrParameters);
 	void startAdsrEnvelope();
 	void releaseAdsrEnvelope();
 	bool adsrEnvelopeIsActive() const;
 
-	int   noteNumber;
-	double timeStarted;
-
 private:
-
-	juce::ADSR adsrEnvelope;
-
 	//=============================================================================
-
+	juce::ADSR adsrEnvelope;
+	
 	float sampleRate;
 
 	float baseFrequency;
@@ -77,7 +68,6 @@ private:
 	float deltaPhase;
 
 	//=============================================================================
-
 	int   detuneVoices;
 	float detuneMix;
 	float detuneSpread;
@@ -88,16 +78,15 @@ private:
 	float detunePanningOffsets[MAX_DETUNE_VOICES];
 
 	//=============================================================================
-
 	const Wavetable *wavetable;
 	int wavetableSize;
 	int wavetableNumFrames;
 	int wavetableFrameIndex;
+	
 	int sampleIndex;
 	float sampleOffset;
 
 	//=============================================================================
-
 	void incrementPhase(int);
 	void updateDeltaPhase();
 	float getNextSample();
@@ -109,6 +98,9 @@ private:
 	void applyRenderParameters(int);
 	void applyDetuneRenderParameters(int);
 	void applyBaseRenderParameters();
+
+	void calculateRenderPanCoefficients(float);
+
 
 };
 
