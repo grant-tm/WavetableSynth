@@ -58,13 +58,6 @@ Oscillator::~Oscillator() {}
 
 void Oscillator::render(juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples)
 {
-    if (!this->enable)
-    {
-        return;
-    }
-
-    outputBuffer.clear(startSample, numSamples);
-
     auto output = outputBuffer.getArrayOfWritePointers();
     for (int detuneVoice = 0; detuneVoice < detuneVoices; detuneVoice++)
     {
@@ -75,18 +68,14 @@ void Oscillator::render(juce::AudioBuffer<float> &outputBuffer, int startSample,
         for (int sampleIndex = startSample; sampleIndex < (startSample + numSamples); sampleIndex++)
         {
             incrementPhase(detuneVoice);
-            auto sampleValue = getNextSample() * renderVolume * velocity;
+            
+            auto sampleValue = getNextSample() * renderVolume * velocity / detuneVoices;
+            sampleValue *= adsrEnvelope.isActive() ? adsrEnvelope.getNextSample() : 0.f;
+            
             output[0][sampleIndex] += sampleValue * renderPanCoefficientLeft;
             output[1][sampleIndex] += sampleValue * renderPanCoefficientRight;
         }
     }
-
-    for (int sampleIndex = startSample; sampleIndex < (startSample + numSamples); sampleIndex++)
-    {
-        output[0][sampleIndex] /= detuneVoices;
-        output[1][sampleIndex] /= detuneVoices;
-    }
-
 }
 
 float Oscillator::getNextSample()
@@ -341,6 +330,7 @@ void Oscillator::setSampleRate(float newSampleRate)
     newSampleRate = juce::jmin(192000.f, newSampleRate);
 
     this->sampleRate = newSampleRate;
+    this->adsrEnvelope.setSampleRate(newSampleRate);
 }
 
 // frequency
@@ -400,4 +390,28 @@ void Oscillator::setWavetableFrameIndex(int newFrameIndex)
     newFrameIndex = juce::jmin(wavetableNumFrames, newFrameIndex);
 
     this->wavetableFrameIndex = newFrameIndex;
+}
+
+//=============================================================================
+//
+
+void Oscillator::setAdsrParameters(juce::ADSR::Parameters adsrParameters)
+{
+    adsrEnvelope.setParameters(adsrParameters);
+}
+
+void Oscillator::startAdsrEnvelope()
+{
+    adsrEnvelope.reset();
+    adsrEnvelope.noteOn();
+}
+
+void Oscillator::releaseAdsrEnvelope()
+{
+    adsrEnvelope.noteOff();
+}
+
+bool Oscillator::adsrEnvelopeIsActive() const
+{
+    return adsrEnvelope.isActive();
 }

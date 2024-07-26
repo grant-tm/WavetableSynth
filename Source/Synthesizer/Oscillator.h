@@ -46,7 +46,19 @@ public:
 	void setWavetable(const Wavetable *);
 	void setWavetableFrameIndex(int);
 
+	//=============================================================================
+
+	void setAdsrParameters(juce::ADSR::Parameters adsrParameters);
+	void startAdsrEnvelope();
+	void releaseAdsrEnvelope();
+	bool adsrEnvelopeIsActive() const;
+
+	int   noteNumber;
+	double timeStarted;
+
 private:
+
+	juce::ADSR adsrEnvelope;
 
 	//=============================================================================
 
@@ -54,13 +66,14 @@ private:
 	bool  enable;
 	float baseFrequency;
 	float baseVolume;
-	float velocity;
 	float basePan;
 
 	float renderFrequency;
 	float renderVolume;
 	float renderPanCoefficientLeft;
 	float renderPanCoefficientRight;
+
+	float velocity;
 
 	float phases[MAX_DETUNE_VOICES];
 	float deltaPhase;
