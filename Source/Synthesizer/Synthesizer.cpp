@@ -5,19 +5,24 @@
 
 Synthesizer::Synthesizer()
 {
-    initializeOscillators();
-}
+    // initialize voices
+    int voiceId = 0;
+    for (auto &voice : voices)
+    {
+        voice.id = voiceId++;
+    }
 
-Synthesizer::~Synthesizer()
-{
-
+    // initialize oscillators
+    updateOscillators();
 }
 
 //=============================================================================
-// PUBLIC GETTERS & SETTERS
+// RENDER PARAMETERS GETTERS & SETTERS
 
-//-------------------------------------
-// sample rate
+float Synthesizer::getSampleRate() const
+{
+    return this->sampleRate;
+}
 
 void Synthesizer::setSampleRate(float newSampleRate)
 {
@@ -26,15 +31,6 @@ void Synthesizer::setSampleRate(float newSampleRate)
 
     this->sampleRate = newSampleRate;
 }
-
-float Synthesizer::getSampleRate() const
-{
-    return this->sampleRate;
-}
-
-
-//-------------------------------------
-// frequency
 
 void Synthesizer::setFrequency(float newFrequency)
 {
@@ -51,23 +47,6 @@ void Synthesizer::setFrequencyByMidiNote(int midiNoteNumber, float pitchWheelPos
     setFrequency(newFrequency);
 }
 
-float Synthesizer::calculateFrequencyFromMidiInput(int midiNoteNumber, float pitchWheelPosition)
-{
-    auto pitchBendOffsetCents = getPitchBendOffsetCents(pitchWheelPosition);
-    auto calculatedFrequency = calculateFrequencyFromOffsetMidiNote(midiNoteNumber, pitchBendOffsetCents);
-    return calculatedFrequency;
-}
-
-float Synthesizer::calculateFrequencyFromOffsetMidiNote(int midiNoteNumber, float centsOffset)
-{
-    auto noteHz = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
-    noteHz *= std::pow(2.0, centsOffset / 1200);
-    return (float)noteHz;
-}
-
-//-------------------------------------
-// volume
-
 void Synthesizer::setVolume(float newVolume)
 {
     // limit volume to [0, 1]
@@ -76,9 +55,6 @@ void Synthesizer::setVolume(float newVolume)
 
     this->volume = newVolume;
 }
-
-//-------------------------------------
-// pan
 
 void Synthesizer::setPan(float newPan)
 {
@@ -90,7 +66,47 @@ void Synthesizer::setPan(float newPan)
 }
 
 //=============================================================================
-// WAVETABLE
+// DETUNE PARAMETERS GETTERS & SETTERS
+
+void Synthesizer::setDetuneVoices(int newNumVoices)
+{
+    // limit newNumVoices to [1, MAX_DETUNE_VOICES]
+    newNumVoices = std::max(1, newNumVoices);
+    newNumVoices = std::min(MAX_DETUNE_VOICES, newNumVoices);
+
+    this->detuneVoices = newNumVoices;
+};
+
+void Synthesizer::setDetuneMix(float newDetuneMix)
+{
+    // limit newDetuneMix to [0, 1]
+    newDetuneMix = std::max(0.f, newDetuneMix);
+    newDetuneMix = std::min(1.f, newDetuneMix);
+
+    this->detuneMix = newDetuneMix;
+}
+
+void Synthesizer::setDetuneSpread(float newDetuneSpread)
+{
+    // limit newDetuneSpread to [0, 1]
+    newDetuneSpread = std::max(0.f, newDetuneSpread);
+    newDetuneSpread = std::min(1.f, newDetuneSpread);
+
+    this->detuneMix = newDetuneSpread;
+}
+
+//=============================================================================
+// WAVETABLE GETTERS & SETTERS
+
+const Wavetable *Synthesizer::getWavetableReadPointer() const
+{
+    return &wavetable;
+}
+
+int Synthesizer::getNumWavetableFrames() const
+{
+    return wavetable.getNumChannels();
+}
 
 void Synthesizer::setWavetable(Wavetable &wavetableToCopy)
 {
@@ -113,50 +129,18 @@ void Synthesizer::setWavetableFrameIndex(int newFrameIndex)
     this->wavetableFrameIndex = newFrameIndex;
 }
 
-const Wavetable *Synthesizer::getWavetableReadPointer() const
-{
-	return &wavetable;
-}
-
-int Synthesizer::getNumWavetableFrames() const
-{
-	return wavetable.getNumChannels();
-}
-
-
 //=============================================================================
 // OSCILLATORS
 
-void Synthesizer::initializeOscillators()
+void Synthesizer::updateOscillators()
 {
     for (auto &oscillator : oscillators)
     {
-        oscillator.setAdsrParameters(adsrParameters);
-
-        oscillator.setSampleRate(sampleRate);
-        oscillator.setFrequency(frequency);
-        oscillator.setVolume(volume);
-        oscillator.setPan(pan);
-
-        oscillator.setWavetable(getWavetableReadPointer());
-        oscillator.setWavetableFrameIndex(0);
-
-        oscillator.setDetuneVoices(detuneVoices);
-        oscillator.setDetuneMix(detuneMix);
-        oscillator.setDetuneSpread(detuneSpread);
-        oscillator.updateDetuneVoiceConfiguration();
+        updateOscillator(oscillator);
     }
 }
 
-void Synthesizer::updateAllOscillators()
-{
-    for (auto &oscillator : oscillators)
-    {
-        updateOscillatorParameters(oscillator);
-    }
-}
-
-void Synthesizer::updateOscillatorParameters(Oscillator &oscillator)
+void Synthesizer::updateOscillator(Oscillator &oscillator)
 {
     oscillator.setSampleRate(sampleRate);
     oscillator.setVolume(volume);
@@ -165,10 +149,12 @@ void Synthesizer::updateOscillatorParameters(Oscillator &oscillator)
     oscillator.setWavetable(getWavetableReadPointer());
     oscillator.setWavetableFrameIndex(wavetableFrameIndex);
 
-    updateOscillatorDetuneIfChanged(oscillator);
+    updateOscillatorDetuneParameters(oscillator);
 }
 
-void Synthesizer::updateOscillatorDetuneIfChanged(Oscillator &oscillator)
+// sets oscillator detune parameters and triggers voice config recalculation
+// if and only if synthesizer detune parameters changed
+void Synthesizer::updateOscillatorDetuneParameters(Oscillator &oscillator)
 {
     if (oscillator.getDetuneVoices() != detuneVoices ||
         oscillator.getDetuneMix() != detuneMix ||
@@ -182,22 +168,13 @@ void Synthesizer::updateOscillatorDetuneIfChanged(Oscillator &oscillator)
 }
 
 //=============================================================================
-// RENDER
+// RENDERING
 
 void Synthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiBuffer)
 {
     auto currentSample = 0;
 
-    /*for (auto &oscillator : oscillators)
-    {
-        oscillator.setSampleRate(sampleRate);
-        oscillator.setVolume(volume);
-        oscillator.setPan(pan);
-        oscillator.setWavetableFrameIndex(wavetableFrameIndex);
-        updateOscillatorDetuneIfChanged(oscillator);
-    }*/
-
-    updateAllOscillators();
+    updateOscillators();
 
     for (const auto midiData : midiBuffer)
     {
@@ -220,7 +197,6 @@ void Synthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffe
 void Synthesizer::render(juce::AudioBuffer<float> &buffer, int startSample, int numSamples)
 { 
     buffer.clear(startSample, numSamples);
-
     for (auto &oscillator : this->oscillators)
     {
         if (oscillator.adsrEnvelopeIsActive())
@@ -257,7 +233,7 @@ void Synthesizer::startNote(int midiNoteNumber, float velocity, int pitchWheelPo
     }
 
     updateVoiceAges();
-    auto &voice = activeVoices[voiceIndex];
+    auto &voice = voices[voiceIndex];
     voice.noteNumber = midiNoteNumber;
     voice.age = 0;
 
@@ -270,26 +246,16 @@ void Synthesizer::startNote(int midiNoteNumber, float velocity, int pitchWheelPo
 
 void Synthesizer::updateVoiceAges()
 {
-    auto oscillatorId = 0;
-
-    for (auto &voice : activeVoices)
+    for (auto &voice : voices)
     {
-        if (voice.age < 0)
-        {
-            ++oscillatorId;
+        // skip idle voices
+        if (voice.age < 0) {
             continue;
         }
 
-        if (!oscillators[oscillatorId].adsrEnvelopeIsActive())
-        {
-            voice.age = -1;
-        }
-        else
-        {
-            ++voice.age;
-        }
-        ++oscillatorId;
-        
+        // increment or reset voice age based on osc adsr envelope status
+        auto oscIsActive = oscillators[voice.id].adsrEnvelopeIsActive();
+        voice.age = oscIsActive ? ++voice.age : -1;
     }
 }
 
@@ -301,9 +267,23 @@ void Synthesizer::stopNote(int midiNoteNumber)
         return;
     }
 
-    auto &voice = activeVoices[voiceIndex];
+    auto &voice = voices[voiceIndex];
     auto &oscillator = oscillators[voiceIndex];
     oscillator.releaseAdsrEnvelope();
+}
+
+float Synthesizer::calculateFrequencyFromMidiInput(int midiNoteNumber, float pitchWheelPosition)
+{
+    auto pitchBendOffsetCents = getPitchBendOffsetCents(pitchWheelPosition);
+    auto calculatedFrequency = calculateFrequencyFromOffsetMidiNote(midiNoteNumber, pitchBendOffsetCents);
+    return calculatedFrequency;
+}
+
+float Synthesizer::calculateFrequencyFromOffsetMidiNote(int midiNoteNumber, float centsOffset)
+{
+    auto noteHz = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
+    noteHz *= std::pow(2.0, centsOffset / 1200);
+    return (float)noteHz;
 }
 
 //=============================================================================
@@ -311,26 +291,16 @@ void Synthesizer::stopNote(int midiNoteNumber)
 
 int Synthesizer::findVoice(int midiNoteNumber) const
 {
+    int voidId = -1;
+    
     // 1st choice: find voice playing the same note to retrigger
-    int voiceIndex = 0;
-    for (const auto &voice : activeVoices)
-    {
-        if (voice.noteNumber == midiNoteNumber)
-        {
-            return voiceIndex;
-        }
-        ++voiceIndex;
+    if ((voidId = findVoicePlayingNote(midiNoteNumber)) >= 0) {
+        return voidId;
     }
 
     // 2nd choice: trigger an inactive voice
-    voiceIndex = 0;
-    for (const auto &voice : activeVoices)
-    {
-        if (voice.age == -1)
-        {
-            return voiceIndex;
-        }
-        ++voiceIndex;
+    if ((voidId = findFreeVoice()) >= 0) {
+        return voidId;
     }
 
     // all voices active!
@@ -341,50 +311,70 @@ int Synthesizer::findVoice(int midiNoteNumber) const
     }
 
     // 3rd choice: steal oldest voice (if allowed)
-    int indexOfOldestVoice = 0;
-    int maxAgeSeen = -1;
-    voiceIndex = 0;
-
-    for (const auto &voice : activeVoices)
-    {
-        if (voice.age > maxAgeSeen)
-        {
-            maxAgeSeen = voice.age;
-            indexOfOldestVoice = voiceIndex;
-        }
-        ++voiceIndex;
+    if ((voidId = findOldestVoice()) >= 0) {
+        return voidId;
     }
 
-    return indexOfOldestVoice;
+    // there is a bug in the voice management system
+    jassert(false);
+    return voidId;
 }
 
 int Synthesizer::findVoicePlayingNote(int midiNoteNumber) const
 {
     // serach for voice playing note
-    int oscillatorId = 0;
-    for (const auto &voice : activeVoices)
+    for (const auto &voice : voices)
     {
         if (voice.noteNumber == midiNoteNumber)
         {
-            return oscillatorId;
+            return voice.id;
         }
-        ++oscillatorId;
     }
 
     // failed to find voice playing the given note
     return -1;
 }
 
+int Synthesizer::findFreeVoice() const
+{
+    // serach for voice playing note
+    for (const auto &voice : voices)
+    {
+        if (voice.age == -1)
+        {
+            return voice.id;
+        }
+    }
+
+    // failed to find voice playing the given note
+    return -1;
+}
+
+int Synthesizer::findOldestVoice() const
+{
+    int greatestAgeSeen = -1;
+    int oldestVoiceIndex = 0;
+
+    for (auto &voice : voices)
+    {
+        if (voice.age > greatestAgeSeen)
+        {
+            greatestAgeSeen = voice.age;
+            oldestVoiceIndex = voice.id;
+        }
+    }
+
+    return oldestVoiceIndex;
+}
+
 //=============================================================================
 // PITCH WHEEL
 
-// pitch wheel move callback: store new position and update frequency
 void Synthesizer::pitchWheelMoved(int newPitchWheelValue)
 {
     setPitchBendPosition(newPitchWheelValue);
 }
 
-// set the pitch bend position (normalized to a [-1, 1] float value)
 void Synthesizer::setPitchBendPosition(int position)
 {
     if (position > 8192)
@@ -393,7 +383,6 @@ void Synthesizer::setPitchBendPosition(int position)
         pitchBendWheelPosition = (float)(8192.f - position) / -8192.f;
 }
 
-// convert pitch bend wheel position to a note offset in cents based on wheel upper or lower bounds
 float Synthesizer::getPitchBendOffsetCents() const
 {
     if (pitchBendWheelPosition >= 0.0f)
@@ -408,7 +397,6 @@ float Synthesizer::getPitchBendOffsetCents() const
     }
 }
 
-// convert pitch bend wheel position to a note offset in cents based on wheel upper or lower bounds
 float Synthesizer::getPitchBendOffsetCents(float pitchWheelPosition) const
 {
     if (pitchWheelPosition >= 0.0f)
@@ -421,39 +409,4 @@ float Synthesizer::getPitchBendOffsetCents(float pitchWheelPosition) const
         // calculate cents based on position relative to LOWER lower
         return pitchWheelPosition * (float)pitchBendLowerBoundSemitones * 100.f;
     }
-}
-
-//-------------------------------------
-// detune num voices
-void Synthesizer::setDetuneVoices(int newNumVoices)
-{
-    // limit newNumVoices to [1, MAX_DETUNE_VOICES]
-    newNumVoices = std::max(1, newNumVoices);
-    newNumVoices = std::min(MAX_DETUNE_VOICES, newNumVoices);
-
-    this->detuneVoices = newNumVoices;
-};
-
-//-------------------------------------
-// detune frequency offsets
-
-void Synthesizer::setDetuneMix(float newDetuneMix)
-{
-    // limit newDetuneMix to [0, 1]
-    newDetuneMix = std::max(0.f, newDetuneMix);
-    newDetuneMix = std::min(1.f, newDetuneMix);
-
-    this->detuneMix = newDetuneMix;
-}
-
-//-------------------------------------
-// detune frequency offsets
-
-void Synthesizer::setDetuneSpread(float newDetuneSpread)
-{
-    // limit newDetuneSpread to [0, 1]
-    newDetuneSpread = std::max(0.f, newDetuneSpread);
-    newDetuneSpread = std::min(1.f, newDetuneSpread);
-
-    this->detuneMix = newDetuneSpread;
 }

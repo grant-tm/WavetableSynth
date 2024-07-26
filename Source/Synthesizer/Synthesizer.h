@@ -4,13 +4,7 @@
 #include <JuceHeader.h>
 #include "Oscillator.h"
 
-#define MAX_POLYPHONY 2
-
-struct Voice
-{
-	int noteNumber = 0;
-	int age = -1;
-};
+#define MAX_POLYPHONY 16
 
 class Synthesizer
 {
@@ -18,7 +12,7 @@ public:
 	//==============================================================================
 
 	Synthesizer();
-	~Synthesizer();
+	~Synthesizer() {};
 
 	void updateVoiceAges();
 
@@ -65,7 +59,12 @@ private:
 	float detuneSpread = 1;
 
 	//==============================================================================
-	struct Voice activeVoices[MAX_POLYPHONY];
+	struct Voice
+	{
+		int id;
+		int noteNumber = 0;
+		int age = -1;
+	} voices[MAX_POLYPHONY];
 	bool voiceStealingEnabled = true;
 
 	float pitchBendWheelPosition = 0;
@@ -75,10 +74,9 @@ private:
 	//==============================================================================
 	void render(juce::AudioBuffer<float> &buffer, int startSample, int endSample);
 
-	void updateAllOscillators();
-	void initializeOscillators();
-	void updateOscillatorParameters(Oscillator &oscillator);
-	void updateOscillatorDetuneIfChanged(Oscillator &oscillatorId);
+	void updateOscillators();
+	void updateOscillator(Oscillator &);
+	void updateOscillatorDetuneParameters(Oscillator &);
 
 	float calculateFrequencyFromMidiInput(int midiNoteNuber, float pitchWheelPosition);
 	float calculateFrequencyFromOffsetMidiNote(int midiNoteNumber, float centsOffset);
@@ -88,8 +86,9 @@ private:
 	void stopNote(int);
 
 	int findVoice(int) const;
-	int findVoiceToSteal(int) const;
 	int findVoicePlayingNote(int) const;
+	int findFreeVoice() const;
+	int findOldestVoice() const;
 
 	void  pitchWheelMoved(int newPitchWheelValue);
 	void  setPitchBendPosition(int position);
