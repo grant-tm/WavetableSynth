@@ -15,7 +15,7 @@ WavetableDisplayComponent::WavetableDisplayComponent(WavetableSynthAudioProcesso
         param->addListener(this);
     }
 
-    startTimerHz(5);
+    startTimerHz(24);
 }
 
 WavetableDisplayComponent::~WavetableDisplayComponent()
@@ -182,7 +182,7 @@ juce::Path WavetableDisplayComponent::createPathFromWavetable()
     const double graphYMax = bounds.getY();
     const double baseYPixel = (graphYMin + graphYMax) / 2;
     const double baseXPixel = bounds.getX();
-    const double numXPixels = bounds.getWidth();
+    double numXPixels = bounds.getWidth();
 
     //------------------------------------------------------------------------
     // LAMBDA TO SCALE Y VALUES
@@ -197,6 +197,7 @@ juce::Path WavetableDisplayComponent::createPathFromWavetable()
 
     juce::Path wavetableCurve;
     wavetableCurve.startNewSubPath(baseXPixel, baseYPixel);
+
     for (int x = 0; x < numXPixels; ++x)
     {
         // get sapmle from wavetable

@@ -63,6 +63,29 @@ void generateSineFrames(Wavetable &tableToFill, int resolution)
     }
 }
 
+void generateManySineFrames(Wavetable &tableToFill)
+{
+    int numFrames = 255;
+    int numSamples = 1024;
+    
+    tableToFill.setSize(numFrames, numSamples);
+
+    auto angleDelta = juce::MathConstants<float>::twoPi / (float)(numSamples - 1);
+
+    for (int frame = 0; frame < numFrames; frame++)
+    {
+        auto currentAngle = 0.f;
+        auto *samples = tableToFill.getWritePointer(frame);
+        for (int sampleIndex = 0; sampleIndex < numSamples; ++sampleIndex)
+        {
+            auto sampleValue = std::sin(currentAngle);
+            samples[sampleIndex] = (float) sampleValue;
+            currentAngle += angleDelta;
+        }
+        angleDelta *= 1.01;
+    }
+}
+
 void generateSquareWavetable(Wavetable& tableToFill, int resolution)
 {
     tableToFill.setSize(1, resolution);
@@ -130,7 +153,8 @@ oversamplingEngine(2, (size_t)std::log(oversampleCoefficient), juce::dsp::Oversa
 #endif
 {
     Wavetable wavetable;
-    generateSineFrames(wavetable, 512);
+    //generateSineFrames(wavetable, 512);
+    generateManySineFrames(wavetable);
     synthesizer.setWavetable(wavetable);
 }
 

@@ -25,6 +25,7 @@ void generateSquareWavetable(Wavetable& tableToFill, int resolution);
 void generateSawWavetable(Wavetable& tableToFill, int resolution);
 void generateMultiSineWavetable(Wavetable& tableToFill, int resolution, int coefficientA, int coefficientB);
 void generateSineFrames(Wavetable &tableToFill, int resolution);
+void generateManySineFrames(Wavetable &);
 
 //==============================================================================
 class WavetableSynthAudioProcessor  : public juce::AudioProcessor
@@ -81,7 +82,7 @@ public:
     Oscillator osc;
 
 private:
-    const int oversampleCoefficient = 8;
+    const int oversampleCoefficient = 16;
     juce::dsp::Oversampling<float> oversamplingEngine;
 
     //==============================================================================
