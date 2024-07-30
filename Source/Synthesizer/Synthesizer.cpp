@@ -25,7 +25,7 @@ Synthesizer::Synthesizer()
     updateOscillators();
 
     // initialize adsr
-    adsrParameters = juce::ADSR::Parameters(0.05f, 1.f, 0.8f, 1.f);
+    adsrParameters = juce::ADSR::Parameters(0.10f, 1.f, 0.8f, 1.f);
 
     sampleRate = 22100.f;
     frequency = 200.f;
@@ -236,6 +236,10 @@ void Synthesizer::handleMidiEvent(const juce::MidiMessage &midiMessage)
     {
         stopNote(midiMessage.getNoteNumber());
     }
+    else if (midiMessage.isPitchWheel())
+    {
+        pitchWheelMoved(midiMessage.getPitchWheelValue());
+    }
 }
 
 void Synthesizer::startNote(int midiNoteNumber, float velocity)
@@ -285,6 +289,17 @@ void Synthesizer::stopNote(int midiNoteNumber)
 
     auto &oscillator = oscillators[voiceIndex];
     oscillator.releaseAdsrEnvelope();
+}
+
+void Synthesizer::pitchWheelMoved(int newPitchWheelValue)
+{
+    setPitchBendPosition(newPitchWheelValue);
+    for (auto &voice : voices)
+    {
+        if (voice.age > -1) {
+            oscillators[voice.id].setFrequency(calculateFrequencyFromOffsetMidiNote(voice.noteNumber, getPitchBendOffsetCents()));
+        }
+    }
 }
 
 float Synthesizer::calculateFrequencyFromMidiInput(int midiNoteNumber, float pitchWheelPosition)
@@ -379,11 +394,6 @@ int Synthesizer::findOldestVoice() const
 
 //=============================================================================
 // PITCH WHEEL
-
-void Synthesizer::pitchWheelMoved(int newPitchWheelValue)
-{
-    setPitchBendPosition(newPitchWheelValue);
-}
 
 void Synthesizer::setPitchBendPosition(int position)
 {
