@@ -32,7 +32,7 @@ Synthesizer::Synthesizer()
     volume = 1.f;
     pan = 0.f;
 
-    detuneVoices = 1;
+    detuneVoices = 5;
     detuneMix = 1.f;
     detuneSpread = 1.f;
 
@@ -210,6 +210,10 @@ void Synthesizer::render(juce::AudioBuffer<float> &buffer, int startSample, int 
     buffer.clear(startSample, numSamples);
     for (auto &oscillator : this->oscillators)
     {
+        oscillator.setDetuneVoices(detuneVoices);
+        oscillator.setDetuneSpread(detuneSpread);
+        oscillator.setDetuneMix(detuneMix);
+        oscillator.updateDetuneVoiceConfiguration();
         if (oscillator.adsrEnvelopeIsActive())
         {
             oscillator.render(buffer, startSample, numSamples);
@@ -251,6 +255,7 @@ void Synthesizer::startNote(int midiNoteNumber, float velocity)
     auto &oscillator = oscillators[voiceIndex];
     oscillator.setFrequency(calculateFrequencyFromOffsetMidiNote(midiNoteNumber, getPitchBendOffsetCents()));
     oscillator.setVelocity(velocity);
+    oscillator.randomizePhases();
     oscillator.startAdsrEnvelope();
 
 }
