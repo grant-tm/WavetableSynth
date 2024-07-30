@@ -82,7 +82,34 @@ void generateManySineFrames(Wavetable &tableToFill)
             samples[sampleIndex] = (float) sampleValue;
             currentAngle += angleDelta;
         }
-        angleDelta *= 1.01f;
+        angleDelta *= 1.005f;
+    }
+}
+
+void generateRandomSineCombinations(Wavetable &tableToFill)
+{
+    int numFrames = 10;
+    int numSamples = 1024;
+
+    tableToFill.setSize(numFrames, numSamples);
+
+    auto angleDelta = juce::MathConstants<float>::twoPi / (float)(numSamples - 1);
+
+    juce::Random rng;
+    for (int frame = 0; frame < numFrames; frame++)
+    {
+        auto currentAngle = 0.f;
+        auto secondAngle = 0.f;
+        auto randomDelta = angleDelta * std::floor(1 + (rng.nextFloat() * 6));
+        //auto randomDelta = angleDelta * rng.nextFloat() * 10;
+        auto *samples = tableToFill.getWritePointer(frame);
+        for (int sampleIndex = 0; sampleIndex < numSamples; ++sampleIndex)
+        {
+            auto sampleValue = std::sin(currentAngle) * std::cos(secondAngle);
+            samples[sampleIndex] = (float)sampleValue;
+            currentAngle += angleDelta;
+            secondAngle += randomDelta;
+        }
     }
 }
 
@@ -102,9 +129,13 @@ void generateSawWavetable(Wavetable& tableToFill, int resolution)
     tableToFill.setSize(1, resolution);
     auto* samples = tableToFill.getWritePointer(0);
 
-    for (int i = 0; i < resolution; i++)
+    for (int i = 0; i < resolution/2; i++)
     {
-        samples[i] = -1.f + (2.f * (float)i / (float)resolution);
+        samples[i] = 0.f + (2.f * (float)i / (float)resolution);
+    }
+    for (int i = resolution / 2; i < resolution; i++)
+    {
+        samples[i] = -2.f + (2.f * (float)i / (float)resolution);
     }
 }
 
@@ -153,8 +184,14 @@ oversamplingEngine(2, (size_t)std::log(oversampleCoefficient), juce::dsp::Oversa
 #endif
 {
     Wavetable wavetable;
+    //generateSineWavetable(wavetable, 1024);
+    //generateSawWavetable(wavetable, 1024);
+    //generateSquareWavetable(wavetable, 1024);
+
     //generateSineFrames(wavetable, 512);
-    generateManySineFrames(wavetable);
+    //generateManySineFrames(wavetable);
+    generateRandomSineCombinations(wavetable);
+    
     synthesizer.setWavetable(wavetable);
 }
 
@@ -283,9 +320,10 @@ void WavetableSynthAudioProcessor::updateSynthesizerParametersFromValueTree()
     synthesizer.setVolume(valueTree.getRawParameterValue("OSC_VOLUME")->load());
     synthesizer.setPan(valueTree.getRawParameterValue("OSC_PANNING")->load());
 
-    synthesizer.setDetuneVoices(1);
-    synthesizer.setDetuneSpread(0.4f);
-    synthesizer.setDetuneMix(valueTree.getRawParameterValue("OSC_DETUNE_MIX")->load());
+    auto detuneMix = valueTree.getRawParameterValue("OSC_DETUNE_MIX")->load();
+    synthesizer.setDetuneVoices(int(1 + std::floor(10.f * detuneMix)));
+    synthesizer.setDetuneSpread(0.5f * detuneMix);
+    synthesizer.setDetuneMix(detuneMix);
 
     auto wavetablePositionKnobValue = valueTree.getRawParameterValue("OSC_WAVETABLE_POSITION")->load();
     int wavetablePosition = (int) std::floor(wavetablePositionKnobValue * (std::max(0, synthesizer.getNumWavetableFrames() - 1)));
@@ -356,7 +394,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout WavetableSynthAudioProcessor
 
     // osc detune mix
     auto oscDetuneMixRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f);
-    layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_DETUNE_MIX", "OSC_DETUNE_MIX", oscDetuneMixRange, 1.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("OSC_DETUNE_MIX", "OSC_DETUNE_MIX", oscDetuneMixRange, 0.f));
 
     // osc warp amount
     auto oscWarpAmountRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f);

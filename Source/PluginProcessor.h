@@ -24,6 +24,7 @@ void generateSineWavetable(Wavetable& tableToFill, int resolution);
 void generateSquareWavetable(Wavetable& tableToFill, int resolution);
 void generateSawWavetable(Wavetable& tableToFill, int resolution);
 void generateMultiSineWavetable(Wavetable& tableToFill, int resolution, int coefficientA, int coefficientB);
+void generateRandomSineCombinations(Wavetable &tableToFill);
 void generateSineFrames(Wavetable &tableToFill, int resolution);
 void generateManySineFrames(Wavetable &);
 
