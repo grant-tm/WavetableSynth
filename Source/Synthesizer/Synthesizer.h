@@ -14,8 +14,6 @@ public:
 	Synthesizer();
 	~Synthesizer() {};
 
-	void updateVoiceAges();
-
 	//==============================================================================
 	void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiBuffer);
 	
@@ -78,13 +76,14 @@ private:
 	void updateOscillator(Oscillator &);
 	void updateOscillatorDetuneParameters(Oscillator &);
 
-	float calculateFrequencyFromMidiInput(int midiNoteNuber, float pitchWheelPosition);
-	float calculateFrequencyFromOffsetMidiNote(int midiNoteNumber, float centsOffset);
+	float calculateFrequencyFromMidiInput(int midiNoteNuber, float pitchWheelPosition) const;
+	float calculateFrequencyFromOffsetMidiNote(int midiNoteNumber, float centsOffset) const;
 
 	void handleMidiEvent(const juce::MidiMessage &midiMessage);
 	void startNote(int midiNoteNumber, float velocity);
 	void stopNote(int);
 
+	void updateVoiceAges();
 	int findVoice(int) const;
 	int findVoicePlayingNote(int) const;
 	int findFreeVoice() const;

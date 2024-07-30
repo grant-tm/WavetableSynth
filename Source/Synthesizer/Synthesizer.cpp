@@ -58,10 +58,10 @@ float Synthesizer::getSampleRate() const
     return this->sampleRate;
 }
 
-// [0, 192k]
+// [0, MAX FLOAT]
 void Synthesizer::setSampleRate(float newSampleRate)
 {
-    this->sampleRate = clampFloat(newSampleRate, 0.f, 192000.f);
+    this->sampleRate = clampFloat(newSampleRate, 0.f, FLT_MAX);
 }
 
 // [0, 20k]
@@ -302,14 +302,14 @@ void Synthesizer::pitchWheelMoved(int newPitchWheelValue)
     }
 }
 
-float Synthesizer::calculateFrequencyFromMidiInput(int midiNoteNumber, float pitchWheelPosition)
+float Synthesizer::calculateFrequencyFromMidiInput(int midiNoteNumber, float pitchWheelPosition) const
 {
     auto pitchBendOffsetCents = getPitchBendOffsetCents(pitchWheelPosition);
     auto calculatedFrequency = calculateFrequencyFromOffsetMidiNote(midiNoteNumber, pitchBendOffsetCents);
     return calculatedFrequency;
 }
 
-float Synthesizer::calculateFrequencyFromOffsetMidiNote(int midiNoteNumber, float centsOffset)
+float Synthesizer::calculateFrequencyFromOffsetMidiNote(int midiNoteNumber, float centsOffset) const
 {
     auto noteHz = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
     noteHz *= std::pow(2.0, centsOffset / 1200);
