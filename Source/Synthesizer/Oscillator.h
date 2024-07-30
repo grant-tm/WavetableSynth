@@ -28,6 +28,8 @@ public:
 	void setPan(float);
 
 	//=============================================================================
+	void randomizePhases();
+	
 	void setDetuneVoices(int);
 	void setDetuneMix(float);
 	void setDetuneSpread(float);
@@ -88,6 +90,7 @@ private:
 	//=============================================================================
 	void incrementPhase(int);
 	void updateDeltaPhase();
+
 	float getNextSample();
 
 	void calculateDetuneFrequencyCoefficients();

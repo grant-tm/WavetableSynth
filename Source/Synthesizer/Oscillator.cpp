@@ -22,10 +22,7 @@ Oscillator::Oscillator()
     wavetableNumFrames = 0;
     wavetableFrameIndex = 0;
 
-    for (auto& phase : phases)
-    {
-        phase = 0.f;
-    }
+    randomizePhases();
     deltaPhase = 0.f;
     sampleIndex = 0;
     sampleOffset = 0.f;
@@ -81,7 +78,7 @@ void Oscillator::render(juce::AudioBuffer<float> &outputBuffer, int startSample,
         for (int outputSampleIndex = startSample; outputSampleIndex < (startSample + numSamples); outputSampleIndex++)
         {
             incrementPhase(detuneVoice);
-            auto sampleValue = getNextSample() * renderVolume * velocity / detuneVoices;
+            auto sampleValue = getNextSample() * renderVolume * velocity;
             
             // apply ADSR envelope
             sampleValue *= adsrEnvelope.isActive() ? adsrEnvelope.getNextSample() : 0.f;
@@ -124,7 +121,7 @@ float Oscillator::getNextSample()
 
 void Oscillator::applyRenderParameters(int detuneVoice)
 {
-    if (detuneVoices > 1 && detuneMix > 0)
+    if (detuneVoices > 1 && detuneMix > 0.f)
         applyDetuneRenderParameters(detuneVoice);
     else
         applyBaseRenderParameters();
@@ -177,6 +174,15 @@ void Oscillator::updateDeltaPhase()
         deltaPhase = juce::jmax(0.f, renderFrequency / sampleRate);
 }
 
+void Oscillator::randomizePhases()
+{
+    juce::Random rng;
+    for (auto &phase : phases)
+    {
+        phase = rng.nextFloat();
+    }
+}
+
 //=============================================================================
 // DETUNE
 
@@ -192,7 +198,7 @@ void Oscillator::calculateDetuneFrequencyCoefficients()
     }
 
     // assign frequency coefficients to remaining voices
-    const float maxFrequencyCoefficient = MAX_DETUNE_SPREAD * detuneSpread;
+    const float maxFrequencyCoefficient = MAX_DETUNE_SPREAD * 0.2f * detuneSpread;
     float frequencyStep = maxFrequencyCoefficient / (float) std::floor(detuneVoices / 2);
 
     int numVoicePairsToCreate = (detuneVoices - numVoicesAssigned) / 2;
@@ -211,20 +217,20 @@ void Oscillator::calculateDetuneVolumeCoefficients()
     int numVoicesAssigned = 0;
 
     // create 1 center voice
-    detuneVolumeCoefficients[numVoicesAssigned++] = 1;
+    detuneVolumeCoefficients[numVoicesAssigned++] = 1.f;
 
     // even num voices: create a 2nd center voice
     if (detuneVoices % 2 == 0)
     {
-        detuneVolumeCoefficients[numVoicesAssigned++] = 1;
+        detuneVolumeCoefficients[numVoicesAssigned++] = 1.f;
     }
 
     // assign mixed volume to remaining voices
     int numVoicePairsToCreate = (detuneVoices - numVoicesAssigned) / 2;
     for (int voicePair = 1; voicePair <= numVoicePairsToCreate; voicePair++)
     {
-        detuneVolumeCoefficients[numVoicesAssigned++] = detuneMix;
-        detuneVolumeCoefficients[numVoicesAssigned++] = detuneMix;
+        detuneVolumeCoefficients[numVoicesAssigned++] = 1.f * detuneMix;
+        detuneVolumeCoefficients[numVoicesAssigned++] = 1.f * detuneMix;
     }
 }
 
