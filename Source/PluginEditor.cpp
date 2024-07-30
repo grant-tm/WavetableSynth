@@ -19,8 +19,8 @@ WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(Wavetable
     oscPanningKnob(*audioProcessor.valueTree.getParameter("OSC_PANNING"), "PAN"),
     oscPanningKnobAttachment(audioProcessor.valueTree, "OSC_PANNING", oscPanningKnob),
     // DETUNE MIX KNOB
-    oscDetuneMixKnob(*audioProcessor.valueTree.getParameter("OSC_DETUNE_AMT"), "DET MIX"),
-    oscDetuneMixKnobAttachment(audioProcessor.valueTree, "OSC_DETUNE_AMT", oscDetuneMixKnob),
+    oscDetuneMixKnob(*audioProcessor.valueTree.getParameter("OSC_DETUNE_MIX"), "DETUNE"),
+    oscDetuneMixKnobAttachment(audioProcessor.valueTree, "OSC_DETUNE_MIX", oscDetuneMixKnob),
     // WARP AMOUNT KNOB
     oscWarpAmountKnob(*audioProcessor.valueTree.getParameter("OSC_WARP_AMT"), "WARP"),
     oscWarpAmountKnobAttachment(audioProcessor.valueTree, "OSC_WARP_AMT", oscWarpAmountKnob),
