@@ -28,7 +28,7 @@ Oscillator::Oscillator()
     sampleOffset = 0.f;
     sampleOffset = 0.f;
 
-    sampleRate = 0.f;
+    sampleRate = 1.f;
     baseFrequency = 0.f;
     baseVolume = 0.f;
     basePan = 0.f;
@@ -308,10 +308,10 @@ void Oscillator::setDetuneSpread(float newDetuneSpread)
 //=============================================================================
 // RENDER PARAMETERS
 
-// sample rate [0, 192000]
+// sample rate [1, 192000]
 void Oscillator::setSampleRate(float newSampleRate)
 {
-    newSampleRate = clampFloat(newSampleRate, 0.f, 192000.f);
+    newSampleRate = clampFloat(newSampleRate, 1.f, 192000.f);
     this->sampleRate = newSampleRate;
     this->adsrEnvelope.setSampleRate(newSampleRate);
 }
