@@ -102,12 +102,14 @@ void Knob::paint(juce::Graphics& g)
     //---------------------------------------------------------------------
     // DEBUG: show knob bounding boxes
     
+    /*
     g.setColour(Colours::red);
     g.drawRect(getLocalBounds());
     g.setColour(Colours::yellow);
     g.drawRect(sliderBounds);
     g.setColour(Colours::magenta);
     g.drawRect(labelBounds);
+    */
 
     //---------------------------------------------------------------------
     // DRAW KNOB

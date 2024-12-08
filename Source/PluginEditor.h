@@ -14,6 +14,7 @@
 #include "Synthesizer/SynthesizerState.h"
 
 #include "GUI Components/Knob.h"
+#include "GUI Components/WavetableSlider.h"
 #include "GUI Components/WavetableDisplay.h"
 
 enum ColorPalette
@@ -50,30 +51,24 @@ public:
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
     WavetableSynthAudioProcessor& audioProcessor;
-
-    using KnobAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
-
-    Knob oscVolumeKnob;
-    KnobAttachment oscVolumeKnobAttachment;
-
-    Knob oscPanningKnob;
-    KnobAttachment oscPanningKnobAttachment;
-
-    Knob oscDetuneMixKnob;
-    KnobAttachment oscDetuneMixKnobAttachment;
-    
-    Knob oscWarpAmountKnob;
-    KnobAttachment oscWarpAmountKnobAttachment;
-
-    Knob oscWavetablePositionKnob;
-    KnobAttachment oscWavetablePositionKnobAttachment;
 
     struct WavetableDisplayComponent wavetableDisplay;
 
-    std::vector<juce::Component*> getKnobs();
+    Knob oscVolumeKnob;
+    Knob oscPanningKnob;
+    Knob oscDetuneMixKnob;
+    Knob oscWarpAmountKnob;
+    WavetableSlider oscWavetablePositionKnob;
+
+    std::vector<juce::Component *> getKnobs();
+
+    using KnobAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+    KnobAttachment oscVolumeKnobAttachment;
+    KnobAttachment oscPanningKnobAttachment;
+    KnobAttachment oscDetuneMixKnobAttachment;
+    KnobAttachment oscWarpAmountKnobAttachment;
+    KnobAttachment oscWavetablePositionKnobAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WavetableSynthAudioProcessorEditor)
 };

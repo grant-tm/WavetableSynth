@@ -15,18 +15,23 @@ WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(Wavetable
     // VOLUME KNOB
     oscVolumeKnob(*audioProcessor.valueTree.getParameter("OSC_VOLUME"), "VOL"),
     oscVolumeKnobAttachment(audioProcessor.valueTree, "OSC_VOLUME", oscVolumeKnob),
+    
     // PANNING KNOB
     oscPanningKnob(*audioProcessor.valueTree.getParameter("OSC_PANNING"), "PAN"),
     oscPanningKnobAttachment(audioProcessor.valueTree, "OSC_PANNING", oscPanningKnob),
+    
     // DETUNE MIX KNOB
     oscDetuneMixKnob(*audioProcessor.valueTree.getParameter("OSC_DETUNE_MIX"), "DETUNE"),
     oscDetuneMixKnobAttachment(audioProcessor.valueTree, "OSC_DETUNE_MIX", oscDetuneMixKnob),
+    
     // WARP AMOUNT KNOB
     oscWarpAmountKnob(*audioProcessor.valueTree.getParameter("OSC_WARP_AMOUNT"), "WARP"),
     oscWarpAmountKnobAttachment(audioProcessor.valueTree, "OSC_WARP_AMOUNT", oscWarpAmountKnob),
+    
     // WAVETABLE POSITION KNOB
     oscWavetablePositionKnob(*audioProcessor.valueTree.getParameter("OSC_WAVETABLE_POSITION"), "WT POS"),
     oscWavetablePositionKnobAttachment(audioProcessor.valueTree, "OSC_WAVETABLE_POSITION", oscWavetablePositionKnob),
+    
     // WAVETABLE DISPLAY COMPONENT
     wavetableDisplay(audioProcessor)
 {
@@ -80,18 +85,14 @@ void WavetableSynthAudioProcessorEditor::resized()
     oscDetuneMixKnob.setBounds(oscDetuneMixKnobArea);
 
     // RIGHT HAND KNOBS
-    auto oscMorphKnobArea = rightControlArea;
-    oscMorphKnobArea.removeFromTop((LARGE_KNOB_DIAMETER_PIXELS * 1) + (1 * 15));
-
-    // wavetable positition
-    auto oscWavetablePositionKnobArea = oscMorphKnobArea.removeFromTop((LARGE_KNOB_DIAMETER_PIXELS * 1) + (1 * 15));
-    oscWavetablePositionKnob.setBounds(oscWavetablePositionKnobArea);
+    auto oscWavetablePositionSliderArea = rightControlArea.removeFromTop(WAVETABLE_DISPLAY_HEIGHT_PIXELS);
+    oscWavetablePositionKnob.setBounds(oscWavetablePositionSliderArea);
 
     // warp amount
-    auto oscWarpAmountKnobArea = oscMorphKnobArea.removeFromTop(SMALL_KNOB_DIAMETER_PIXELS + 15);
+    /*auto oscWarpAmountKnobArea = oscMorphKnobArea.removeFromTop(SMALL_KNOB_DIAMETER_PIXELS + 15);
     oscWarpAmountKnobArea.removeFromRight(12);
     oscWarpAmountKnobArea.removeFromLeft(12);
-    oscWarpAmountKnob.setBounds(oscWarpAmountKnobArea);
+    oscWarpAmountKnob.setBounds(oscWarpAmountKnobArea);*/
 }
 
 std::vector<juce::Component*> WavetableSynthAudioProcessorEditor::getKnobs()
