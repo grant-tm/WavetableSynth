@@ -14,6 +14,10 @@
               file="Source/GUI Components/WavetableDisplay.cpp"/>
         <FILE id="U8x8Zs" name="WavetableDisplay.h" compile="0" resource="0"
               file="Source/GUI Components/WavetableDisplay.h"/>
+        <FILE id="nGBoei" name="WavetableSlider.cpp" compile="1" resource="0"
+              file="Source/GUI Components/WavetableSlider.cpp"/>
+        <FILE id="NOlAOw" name="WavetableSlider.h" compile="0" resource="0"
+              file="Source/GUI Components/WavetableSlider.h"/>
       </GROUP>
       <GROUP id="{296F3735-FBD2-6017-9A9F-A876F22C8E6A}" name="Synthesizer">
         <FILE id="xfRxii" name="Oscillator.cpp" compile="1" resource="0" file="Source/Synthesizer/Oscillator.cpp"/>
