@@ -12,6 +12,9 @@
         <FILE id="BMRJrT" name="Button.h" compile="0" resource="0" file="Source/GUI Components/Button.h"/>
         <FILE id="jl7PIL" name="Knob.cpp" compile="1" resource="0" file="Source/GUI Components/Knob.cpp"/>
         <FILE id="NEVLcl" name="Knob.h" compile="0" resource="0" file="Source/GUI Components/Knob.h"/>
+        <FILE id="SPl7gK" name="TransposeBar.cpp" compile="1" resource="0"
+              file="Source/GUI Components/TransposeBar.cpp"/>
+        <FILE id="OWz8LD" name="TransposeBar.h" compile="0" resource="0" file="Source/GUI Components/TransposeBar.h"/>
         <FILE id="rZCPUV" name="WavetableDisplay.cpp" compile="1" resource="0"
               file="Source/GUI Components/WavetableDisplay.cpp"/>
         <FILE id="U8x8Zs" name="WavetableDisplay.h" compile="0" resource="0"
