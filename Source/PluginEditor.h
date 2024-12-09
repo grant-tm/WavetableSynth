@@ -13,6 +13,7 @@
 
 #include "Synthesizer/SynthesizerState.h"
 
+#include "GUI Components/Button.h"
 #include "GUI Components/Knob.h"
 #include "GUI Components/WavetableSlider.h"
 #include "GUI Components/WavetableDisplay.h"
@@ -54,6 +55,11 @@ private:
     WavetableSynthAudioProcessor& audioProcessor;
 
     struct WavetableDisplayComponent wavetableDisplay;
+
+    Button loadButton;
+    Button saveButton;
+    Button editButton;
+    Button viewButton;
 
     Knob oscVolumeKnob;
     Knob oscPanningKnob;

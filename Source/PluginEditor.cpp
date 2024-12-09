@@ -12,6 +12,13 @@
 //==============================================================================
 WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(WavetableSynthAudioProcessor &p)
     : AudioProcessorEditor(&p), audioProcessor(p),
+   
+    // TOP BUTTONS
+    loadButton("LOAD_BUTTON", juce::Colour(0xFFFF256D), juce::Colour(0xFFFF558D), juce::Colour(0xFF0F1D1F)),
+    saveButton("SAVE_BUTTON", juce::Colour(0xFFFFEC47), juce::Colour(0xFFFFF59C), juce::Colour(0xFF0F1D1F)),
+    editButton("EDIT_BUTTON", juce::Colour(0xFF61FF8D), juce::Colour(0xFF97FFB4), juce::Colour(0xFF0F1D1F)),
+    viewButton("VIEW_BUTTON", juce::Colour(0xFF50C0FF), juce::Colour(0xFF6BCAFF), juce::Colour(0xFF0F1D1F)),
+
     // VOLUME KNOB
     oscVolumeKnob(*audioProcessor.valueTree.getParameter("OSC_VOLUME"), "VOL"),
     oscVolumeKnobAttachment(audioProcessor.valueTree, "OSC_VOLUME", oscVolumeKnob),
@@ -37,6 +44,18 @@ WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(Wavetable
 {
     setSize (VST_WIDTH_PIXELS, VST_HEIGHT_PIXELS);
 
+    loadButton.setButtonText("LOAD");
+    addAndMakeVisible(loadButton);
+
+    saveButton.setButtonText("SAVE");
+    addAndMakeVisible(saveButton);
+
+    editButton.setButtonText("EDIT");
+    addAndMakeVisible(editButton);
+
+    viewButton.setButtonText("VIEW");
+    addAndMakeVisible(viewButton);
+
     addAndMakeVisible(wavetableDisplay);
     for (auto* knob : getKnobs())
     {
@@ -61,6 +80,32 @@ void WavetableSynthAudioProcessorEditor::resized()
     auto topButtonArea = bounds.removeFromTop(TOP_BAR_HEIGHT_PIXELS);
     auto leftControlArea = bounds.removeFromLeft((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
     auto rightControlArea = bounds.removeFromRight((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
+
+    // TOP BUTTONS
+    topButtonArea.removeFromLeft((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
+    topButtonArea.removeFromRight((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
+    topButtonArea.removeFromTop(12.f);
+    topButtonArea.removeFromBottom(12.f);
+
+    const auto buttonPadding = 8.f;
+
+    auto loadButtonArea = topButtonArea;
+    loadButtonArea.removeFromRight(3 * (loadButtonArea.getWidth() / 4) + 2 * buttonPadding);
+    loadButton.setBounds(loadButtonArea);
+    
+    auto saveButtonArea = topButtonArea;
+    saveButtonArea.removeFromRight(buttonPadding + saveButtonArea.getWidth() / 2);
+    saveButtonArea.removeFromLeft(buttonPadding + saveButtonArea.getWidth() / 2);
+    saveButton.setBounds(saveButtonArea);
+
+    auto editButtonArea = topButtonArea;
+    editButtonArea.removeFromLeft(buttonPadding + editButtonArea.getWidth() / 2);
+    editButtonArea.removeFromRight(buttonPadding + editButtonArea.getWidth() / 2);
+    editButton.setBounds(editButtonArea);
+
+    auto viewButtonArea = topButtonArea;
+    viewButtonArea.removeFromLeft(3 * (viewButtonArea.getWidth() / 4) + 2 * buttonPadding);
+    viewButton.setBounds(viewButtonArea);
 
     // WAVETABLE DISPLAY AREA
     auto wavetableDisplayArea = bounds;
