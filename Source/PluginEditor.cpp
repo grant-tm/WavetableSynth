@@ -87,7 +87,7 @@ void WavetableSynthAudioProcessorEditor::resized()
     topButtonArea.removeFromTop(12.f);
     topButtonArea.removeFromBottom(12.f);
 
-    const auto buttonPadding = 8.f;
+    const auto buttonPadding = 4.f;
 
     auto loadButtonArea = topButtonArea;
     loadButtonArea.removeFromRight(3 * (loadButtonArea.getWidth() / 4) + 2 * buttonPadding);
