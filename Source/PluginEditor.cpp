@@ -19,6 +19,12 @@ WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(Wavetable
     editButton("EDIT_BUTTON", juce::Colour(0xFF61FF8D), juce::Colour(0xFF97FFB4), juce::Colour(0xFF0F1D1F)),
     viewButton("VIEW_BUTTON", juce::Colour(0xFF50C0FF), juce::Colour(0xFF6BCAFF), juce::Colour(0xFF0F1D1F)),
 
+    // SCREEN ELEMENTS
+    transposeBar(),
+    wavetableDisplay(audioProcessor),
+    adsrControls(),
+    detuneVoicesAndWarpModeControls(),
+
     // VOLUME KNOB
     oscVolumeKnob(*audioProcessor.valueTree.getParameter("OSC_VOLUME"), "VOL"),
     oscVolumeKnobAttachment(audioProcessor.valueTree, "OSC_VOLUME", oscVolumeKnob),
@@ -37,10 +43,7 @@ WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(Wavetable
     
     // WAVETABLE POSITION KNOB
     oscWavetablePositionKnob(*audioProcessor.valueTree.getParameter("OSC_WAVETABLE_POSITION"), "WT POS"),
-    oscWavetablePositionKnobAttachment(audioProcessor.valueTree, "OSC_WAVETABLE_POSITION", oscWavetablePositionKnob),
-    
-    // WAVETABLE DISPLAY COMPONENT
-    wavetableDisplay(audioProcessor)
+    oscWavetablePositionKnobAttachment(audioProcessor.valueTree, "OSC_WAVETABLE_POSITION", oscWavetablePositionKnob)
 {
     setSize (VST_WIDTH_PIXELS, VST_HEIGHT_PIXELS);
 
@@ -55,6 +58,10 @@ WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(Wavetable
 
     viewButton.setButtonText("VIEW");
     addAndMakeVisible(viewButton);
+
+    addAndMakeVisible(transposeBar);
+    addAndMakeVisible(adsrControls);
+    addAndMakeVisible(detuneVoicesAndWarpModeControls);
 
     addAndMakeVisible(wavetableDisplay);
     for (auto* knob : getKnobs())
@@ -75,44 +82,86 @@ void WavetableSynthAudioProcessorEditor::paint (juce::Graphics& g)
 
 void WavetableSynthAudioProcessorEditor::resized()
 {
+    //-----------------------------------------------------
     // GET BOUNDS
     auto bounds = getLocalBounds();
-    auto topButtonArea = bounds.removeFromTop(TOP_BAR_HEIGHT_PIXELS);
-    auto leftControlArea = bounds.removeFromLeft((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
-    auto rightControlArea = bounds.removeFromRight((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
 
-    // TOP BUTTONS
+    //-----------------------------------------------------
+    // CREATE BUTTON AREA
+    
+    // button spacing parameters
+    const auto buttonHorizontalPadding = 4;
+    const auto buttonVerticalPadding = 12;
+
+    // create button area
+    auto topButtonArea = bounds;
+    topButtonArea = topButtonArea.removeFromTop(TOP_BAR_HEIGHT_PIXELS);
     topButtonArea.removeFromLeft((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
     topButtonArea.removeFromRight((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
-    topButtonArea.removeFromTop(12.f);
-    topButtonArea.removeFromBottom(12.f);
+    topButtonArea.removeFromTop(buttonVerticalPadding);
+    topButtonArea.removeFromBottom(buttonVerticalPadding);
 
-    const auto buttonPadding = 4.f;
-
+    // load button
     auto loadButtonArea = topButtonArea;
-    loadButtonArea.removeFromRight(3 * (loadButtonArea.getWidth() / 4) + 2 * buttonPadding);
+    loadButtonArea.removeFromRight(3 * (loadButtonArea.getWidth() / 4) + 2 * buttonHorizontalPadding);
     loadButton.setBounds(loadButtonArea);
     
+    // save button
     auto saveButtonArea = topButtonArea;
-    saveButtonArea.removeFromRight(buttonPadding + saveButtonArea.getWidth() / 2);
-    saveButtonArea.removeFromLeft(buttonPadding + saveButtonArea.getWidth() / 2);
+    saveButtonArea.removeFromRight(buttonHorizontalPadding + saveButtonArea.getWidth() / 2);
+    saveButtonArea.removeFromLeft(buttonHorizontalPadding + saveButtonArea.getWidth() / 2);
     saveButton.setBounds(saveButtonArea);
 
+    // edit button
     auto editButtonArea = topButtonArea;
-    editButtonArea.removeFromLeft(buttonPadding + editButtonArea.getWidth() / 2);
-    editButtonArea.removeFromRight(buttonPadding + editButtonArea.getWidth() / 2);
+    editButtonArea.removeFromLeft(buttonHorizontalPadding + editButtonArea.getWidth() / 2);
+    editButtonArea.removeFromRight(buttonHorizontalPadding + editButtonArea.getWidth() / 2);
     editButton.setBounds(editButtonArea);
 
+    // view button
     auto viewButtonArea = topButtonArea;
-    viewButtonArea.removeFromLeft(3 * (viewButtonArea.getWidth() / 4) + 2 * buttonPadding);
+    viewButtonArea.removeFromLeft(3 * (viewButtonArea.getWidth() / 4) + 2 * buttonHorizontalPadding);
     viewButton.setBounds(viewButtonArea);
 
-    // WAVETABLE DISPLAY AREA
-    auto wavetableDisplayArea = bounds;
+    //-----------------------------------------------------
+    // SCREEN
+    
+    // get screen area
+    auto screenArea = bounds;
+    screenArea.removeFromRight((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
+    screenArea.removeFromLeft((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
+    screenArea.removeFromTop(TOP_BAR_HEIGHT_PIXELS);
+    
+    // traspose bar
+    auto transposeBarArea = screenArea;
+    transposeBarArea = transposeBarArea.removeFromTop((WAVETABLE_DISPLAY_HEIGHT_PIXELS / 4) + 5);
+    transposeBar.setBounds(transposeBarArea);
+
+    // wavetable display
+    auto wavetableDisplayArea = screenArea;
+    wavetableDisplayArea.removeFromTop(WAVETABLE_DISPLAY_HEIGHT_PIXELS / 4);
     wavetableDisplayArea = wavetableDisplayArea.removeFromTop(WAVETABLE_DISPLAY_HEIGHT_PIXELS);
     wavetableDisplay.setBounds(wavetableDisplayArea);
 
+    // adsr controls
+    auto adsrArea = screenArea;
+    adsrArea.removeFromTop((5 * (WAVETABLE_DISPLAY_HEIGHT_PIXELS / 4)) - 5);
+    adsrArea = adsrArea.removeFromTop((WAVETABLE_DISPLAY_HEIGHT_PIXELS / 4) + 5);
+    adsrControls.setBounds(adsrArea);
+
+    // detune voices and warp mode controls
+    auto altControlArea = screenArea;
+    altControlArea.removeFromTop((6 * (WAVETABLE_DISPLAY_HEIGHT_PIXELS / 4)) - 5);
+    altControlArea = altControlArea.removeFromTop((WAVETABLE_DISPLAY_HEIGHT_PIXELS / 4));
+    detuneVoicesAndWarpModeControls.setBounds(altControlArea);
+
+    //-----------------------------------------------------
     // LEFT HAND KNOBS
+
+    auto leftControlArea = bounds;
+    leftControlArea = leftControlArea.removeFromLeft((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
+    leftControlArea.removeFromTop(TOP_BAR_HEIGHT_PIXELS);
+   
     auto oscMixingKnobArea = leftControlArea;
     
     // volume
@@ -129,15 +178,22 @@ void WavetableSynthAudioProcessorEditor::resized()
     oscDetuneMixKnobArea.removeFromLeft(12);
     oscDetuneMixKnob.setBounds(oscDetuneMixKnobArea);
 
+    //-----------------------------------------------------
     // RIGHT HAND KNOBS
+    
+    auto rightControlArea = bounds;
+    rightControlArea = rightControlArea.removeFromRight((VST_WIDTH_PIXELS - WAVETABLE_DISPLAY_WIDTH_PIXELS) / 2);
+    rightControlArea.removeFromTop(TOP_BAR_HEIGHT_PIXELS + (WAVETABLE_DISPLAY_HEIGHT_PIXELS / 4));
+
     auto oscWavetablePositionSliderArea = rightControlArea.removeFromTop(WAVETABLE_DISPLAY_HEIGHT_PIXELS);
     oscWavetablePositionKnob.setBounds(oscWavetablePositionSliderArea);
 
-    // warp amount
-    /*auto oscWarpAmountKnobArea = oscMorphKnobArea.removeFromTop(SMALL_KNOB_DIAMETER_PIXELS + 15);
+    rightControlArea.removeFromTop(15);
+    auto oscWarpAmountKnobArea = rightControlArea.removeFromTop(SMALL_KNOB_DIAMETER_PIXELS);
     oscWarpAmountKnobArea.removeFromRight(12);
     oscWarpAmountKnobArea.removeFromLeft(12);
-    oscWarpAmountKnob.setBounds(oscWarpAmountKnobArea);*/
+    oscWarpAmountKnob.setBounds(oscWarpAmountKnobArea);
+
 }
 
 std::vector<juce::Component*> WavetableSynthAudioProcessorEditor::getKnobs()
