@@ -14,11 +14,12 @@
 #include "Synthesizer/SynthesizerState.h"
 
 #include "GUI Components/Button.h"
+#include "GUI Components/TransposeBar.h"
 #include "GUI Components/Knob.h"
 #include "GUI Components/WavetableSlider.h"
 #include "GUI Components/WavetableDisplay.h"
 
-enum ColorPalette
+enum ColorPalette : uint32_t
 {
     body = 0xFF64BEA5,
     border = 0xFF0F1D1F,
@@ -47,19 +48,22 @@ public:
     WavetableSynthAudioProcessorEditor (WavetableSynthAudioProcessor&);
     ~WavetableSynthAudioProcessorEditor() override;
 
-    //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
     WavetableSynthAudioProcessor& audioProcessor;
 
-    struct WavetableDisplayComponent wavetableDisplay;
-
     Button loadButton;
     Button saveButton;
     Button editButton;
     Button viewButton;
+
+    TransposeBar transposeBar;
+    TransposeBar adsrControls;
+    TransposeBar detuneVoicesAndWarpModeControls;
+
+    struct WavetableDisplayComponent wavetableDisplay;
 
     Knob oscVolumeKnob;
     Knob oscPanningKnob;
