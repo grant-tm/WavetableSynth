@@ -15,6 +15,7 @@
 
 #include "GUI Components/Button.h"
 #include "GUI Components/TransposeBar.h"
+#include "GUI Components/AdsrControls.h"
 #include "GUI Components/Knob.h"
 #include "GUI Components/WavetableSlider.h"
 #include "GUI Components/WavetableDisplay.h"
@@ -60,7 +61,7 @@ private:
     Button viewButton;
 
     TransposeBar transposeBar;
-    TransposeBar adsrControls;
+    AdsrControlBar adsrControls;
     TransposeBar detuneVoicesAndWarpModeControls;
 
     struct WavetableDisplayComponent wavetableDisplay;

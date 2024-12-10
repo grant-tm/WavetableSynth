@@ -8,6 +8,9 @@
   <MAINGROUP id="mUcVvk" name="WavetableSynth">
     <GROUP id="{142DF1E7-718A-1031-2A13-D414D869B7E9}" name="Source">
       <GROUP id="{5382074C-A14F-6BC8-3759-395CB366F725}" name="GUI Components">
+        <FILE id="Ou5Ah8" name="AdsrControls.cpp" compile="1" resource="0"
+              file="Source/GUI Components/AdsrControls.cpp"/>
+        <FILE id="gYCV9c" name="AdsrControls.h" compile="0" resource="0" file="Source/GUI Components/AdsrControls.h"/>
         <FILE id="UuvW93" name="Button.cpp" compile="1" resource="0" file="Source/GUI Components/Button.cpp"/>
         <FILE id="BMRJrT" name="Button.h" compile="0" resource="0" file="Source/GUI Components/Button.h"/>
         <FILE id="jl7PIL" name="Knob.cpp" compile="1" resource="0" file="Source/GUI Components/Knob.cpp"/>
