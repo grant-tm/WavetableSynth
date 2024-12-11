@@ -17,6 +17,8 @@ inline float clampFloat (float input, float lowerBound, float upperBound)
 
 Oscillator::Oscillator()
 {
+    adsrScalars.setSize(1, 8096, false, false, false);
+    
     wavetable = nullptr;
     wavetableSize = 0;
     wavetableNumFrames = 0;
@@ -69,22 +71,29 @@ Oscillator::~Oscillator() {}
 void Oscillator::render(juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples)
 {
     auto output = outputBuffer.getArrayOfWritePointers();
+
+    // store the next N samples of the adsr envelope
+    adsrScalars.clear();
+    for (int adsrScalarIndex = 0; adsrScalarIndex < numSamples; adsrScalarIndex++)
+    {
+        adsrScalars.setSample(0, adsrScalarIndex, adsrEnvelope.getNextSample());
+    }
+
+    // for each detune voice, add a wave to the output buffer
     for (int detuneVoice = 0; detuneVoice < detuneVoices; detuneVoice++)
     {
         applyRenderParameters(detuneVoice);
         updateDeltaPhase();
+        int adsrScalarIndex = 0;
 
         // render the damn wave!
         for (int outputSampleIndex = startSample; outputSampleIndex < (startSample + numSamples); outputSampleIndex++)
         {
             incrementPhase(detuneVoice);
             auto sampleValue = getNextSample() * renderVolume * velocity;
-            
-            // apply ADSR envelope
-            sampleValue *= adsrEnvelope.isActive() ? adsrEnvelope.getNextSample() : 0.f;
-            
-            output[0][outputSampleIndex] += sampleValue * renderPanCoefficientLeft;
-            output[1][outputSampleIndex] += sampleValue * renderPanCoefficientRight;
+            auto adsrScalarValue = adsrScalars.getSample(0, ++adsrScalarIndex);
+            output[0][outputSampleIndex] += sampleValue * renderPanCoefficientLeft * adsrScalarValue;
+            output[1][outputSampleIndex] += sampleValue * renderPanCoefficientRight * adsrScalarValue;
         }
     }
 }
@@ -366,7 +375,6 @@ void Oscillator::setAdsrParameters(juce::ADSR::Parameters adsrParameters)
 
 void Oscillator::startAdsrEnvelope()
 {
-    adsrEnvelope.reset();
     adsrEnvelope.noteOn();
 }
 

@@ -52,6 +52,7 @@ public:
 private:
 	//=============================================================================
 	juce::ADSR adsrEnvelope;
+	juce::AudioBuffer<float> adsrScalars;
 	
 	float sampleRate;
 
