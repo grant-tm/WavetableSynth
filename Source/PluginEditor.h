@@ -53,6 +53,8 @@ public:
     void resized() override;
 
 private:
+    using ControlSurfaceAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+    
     WavetableSynthAudioProcessor& audioProcessor;
 
     Button loadButton;
@@ -61,7 +63,17 @@ private:
     Button viewButton;
 
     TransposeBar transposeBar;
+    ControlSurfaceAttachment octaveTransposeAttachment;
+    ControlSurfaceAttachment semitoneTransposeAttachment;
+    ControlSurfaceAttachment fineTuneTransposeAttachment;
+    ControlSurfaceAttachment coarsePitchTransposeAttachment;
+
     AdsrControlBar adsrControls;
+    ControlSurfaceAttachment attackAttachment;
+    ControlSurfaceAttachment decayAttachment;
+    ControlSurfaceAttachment sustainAttachment;
+    ControlSurfaceAttachment releaseAttachment;
+
     TransposeBar detuneVoicesAndWarpModeControls;
 
     struct WavetableDisplayComponent wavetableDisplay;
@@ -74,12 +86,11 @@ private:
 
     std::vector<juce::Component *> getKnobs();
 
-    using KnobAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
-    KnobAttachment oscVolumeKnobAttachment;
-    KnobAttachment oscPanningKnobAttachment;
-    KnobAttachment oscDetuneMixKnobAttachment;
-    KnobAttachment oscWarpAmountKnobAttachment;
-    KnobAttachment oscWavetablePositionKnobAttachment;
+    ControlSurfaceAttachment oscVolumeKnobAttachment;
+    ControlSurfaceAttachment oscPanningKnobAttachment;
+    ControlSurfaceAttachment oscDetuneMixKnobAttachment;
+    ControlSurfaceAttachment oscWarpAmountKnobAttachment;
+    ControlSurfaceAttachment oscWavetablePositionKnobAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WavetableSynthAudioProcessorEditor)
 };

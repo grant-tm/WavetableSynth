@@ -12,7 +12,7 @@
 //==============================================================================
 WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(WavetableSynthAudioProcessor &p)
     : AudioProcessorEditor(&p), audioProcessor(p),
-   
+
     // TOP BUTTONS
     loadButton("LOAD_BUTTON", juce::Colour(0xFFFF256D), juce::Colour(0xFFFF558D), juce::Colour(0xFF0F1D1F)),
     saveButton("SAVE_BUTTON", juce::Colour(0xFFFFEC47), juce::Colour(0xFFFFF59C), juce::Colour(0xFF0F1D1F)),
@@ -21,8 +21,20 @@ WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(Wavetable
 
     // SCREEN ELEMENTS
     transposeBar(),
+    octaveTransposeAttachment(audioProcessor.valueTree, "OCTAVE_TRANSPOSE", transposeBar.octaveSlider),
+    semitoneTransposeAttachment(audioProcessor.valueTree, "SEMITONE_TRANSPOSE", transposeBar.semitoneSlider),
+    fineTuneTransposeAttachment(audioProcessor.valueTree, "FINE_TRANSPOSE", transposeBar.fineSlider),
+    coarsePitchTransposeAttachment(audioProcessor.valueTree, "COARSE_TRANSPOSE", transposeBar.coarseSlider),
+    
     wavetableDisplay(audioProcessor),
+    
+    // ADSR CONTROLSS
     adsrControls(),
+    attackAttachment(audioProcessor.valueTree, "ADSR_ATTACK", adsrControls.attackSlider),
+    decayAttachment(audioProcessor.valueTree, "ADSR_DECAY", adsrControls.decaySlider),
+    sustainAttachment(audioProcessor.valueTree, "ADSR_SUSTAIN", adsrControls.sustainSlider),
+    releaseAttachment(audioProcessor.valueTree, "ADSR_RELEASE", adsrControls.releaseSlider),
+
     detuneVoicesAndWarpModeControls(),
 
     // VOLUME KNOB
