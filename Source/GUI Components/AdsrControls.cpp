@@ -154,7 +154,7 @@ void SustainSliderLookAndFeel::drawLinearSlider(
 AdsrControlBar::AdsrControlBar() :
 	juce::Component()
 {
-	// configure octave slider
+	// configure attack slider
 	attackSlider.setName("ATK");
 	attackSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, false, 0, 0);
 	attackSlider.setVelocityBasedMode(true);
@@ -165,34 +165,34 @@ AdsrControlBar::AdsrControlBar() :
 	attackSlider.setLookAndFeel(&sliderLNF);
 	addAndMakeVisible(attackSlider);
 
-	// configure semitone slider
+	// configure decay slider
 	decaySlider.setName("DEC");
 	decaySlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 0, 0);
 	decaySlider.setVelocityBasedMode(true);
 	decaySlider.setVelocityModeParameters(0.25, 1, 0.1, true);
-	decaySlider.setRange(0.0, 15.0, 0.01);
+	decaySlider.setRange(0.0001, 15.0, 0.0001);
 	decaySlider.setSkewFactor(0.15, false);
 	decaySlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	decaySlider.setLookAndFeel(&sliderLNF);
 	addAndMakeVisible(decaySlider);
 
-	// configure fine tune slider
+	// configure sustain slider
 	sustainSlider.setName("SUS");
 	sustainSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 0, 0);
 	sustainSlider.setVelocityBasedMode(true);
-	sustainSlider.setVelocityModeParameters(0.25, 1, 0.1, true);
+	sustainSlider.setVelocityModeParameters(0.5, 1, 0.1, true);
 	sustainSlider.setRange(0.0, 1.0, 0.01);
 	sustainSlider.setSkewFactor(1, false);
 	sustainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-	sustainSlider.setLookAndFeel(&sliderLNF);
+	sustainSlider.setLookAndFeel(&sustainSliderLNF);
 	addAndMakeVisible(sustainSlider);
 
-	// configure coarse pitch slider
+	// configure release slider
 	releaseSlider.setName("REL");
 	releaseSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 0, 0);
 	releaseSlider.setVelocityBasedMode(true);
 	releaseSlider.setVelocityModeParameters(0.25, 1, 0.1, true);
-	releaseSlider.setRange(0.0, 15.0, 0.01);
+	releaseSlider.setRange(0.0001, 15.0, 0.0001);
 	releaseSlider.setSkewFactor(0.15, false);
 	releaseSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	releaseSlider.setLookAndFeel(&sliderLNF);
