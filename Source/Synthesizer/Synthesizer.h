@@ -29,8 +29,9 @@ public:
 	void setFrequencyByMidiNote(int, float);
 	
 	void setVolume(float);
-
 	void setPan(float);
+
+	void setAdsrParameters(float attack, float decay, float sustain, float release);
 
 	void setDetuneVoices(int);
 	void setDetuneMix(float);

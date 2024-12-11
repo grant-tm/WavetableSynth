@@ -89,6 +89,21 @@ void Synthesizer::setPan(float newPan)
 }
 
 //=============================================================================
+// ADSR PARAMETERS
+
+void Synthesizer::setAdsrParameters(float attack, float decay, float sustain, float release)
+{
+    adsrParameters.attack = clampFloat(attack, 0.f, 15.f);
+    adsrParameters.decay = clampFloat(decay, 0.f, 15.f);
+    adsrParameters.sustain = clampFloat(sustain, 0.f, 1.f);
+    adsrParameters.release = clampFloat(release, 0.f, 15.f);
+    
+    for (auto &osc : oscillators) {
+        osc.setAdsrParameters(adsrParameters);
+    }
+}
+
+//=============================================================================
 // DETUNE PARAMETERS GETTERS & SETTERS
 
 // [1, MAX_DETUNE_VOICES]
