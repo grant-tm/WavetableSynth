@@ -12,6 +12,15 @@ public:
         juce::Slider::SliderStyle, juce::Slider &slider) override;
 };
 
+class SustainSliderLookAndFeel : public juce::LookAndFeel_V4
+{
+public:
+    void drawLinearSlider(juce::Graphics &g,
+        int x, int y, int width, int height,
+        float sliderPos, float minSliderPos, float maxSliderPos,
+        juce::Slider::SliderStyle, juce::Slider &slider) override;
+};
+
 class AdsrControlBar : public juce::Component
 {
 public:
@@ -20,6 +29,7 @@ public:
     ~AdsrControlBar();
 
     AdsrSliderLookAndFeel sliderLNF;
+    SustainSliderLookAndFeel sustainSliderLNF;
 
     juce::Slider attackSlider;
     juce::Slider decaySlider;
