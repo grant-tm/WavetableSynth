@@ -44,6 +44,7 @@ public:
 	void setWavetableFrameIndex(int);
 
 	//=============================================================================
+	void setTransposeValues(int, int, int, float);
 	void setAdsrParameters(juce::ADSR::Parameters adsrParameters);
 	void startAdsrEnvelope();
 	void releaseAdsrEnvelope();
@@ -53,12 +54,17 @@ private:
 	//=============================================================================
 	juce::ADSR adsrEnvelope;
 	juce::AudioBuffer<float> adsrScalars;
-	
+
 	float sampleRate;
 
 	float baseFrequency;
 	float baseVolume;
 	float basePan;
+
+	int octaveTranspose;
+	int semitoneTranspose;
+	int fineTranspose;
+	float coarseTranspose;
 
 	float renderFrequency;
 	float renderVolume;
