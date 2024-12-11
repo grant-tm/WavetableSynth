@@ -182,7 +182,6 @@ AdsrControlBar::AdsrControlBar() :
 	sustainSlider.setVelocityBasedMode(true);
 	sustainSlider.setVelocityModeParameters(0.5, 1, 0.1, true);
 	sustainSlider.setRange(0.0, 1.0, 0.01);
-	sustainSlider.setSkewFactor(1, false);
 	sustainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	sustainSlider.setLookAndFeel(&sustainSliderLNF);
 	addAndMakeVisible(sustainSlider);
