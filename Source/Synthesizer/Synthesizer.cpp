@@ -104,6 +104,17 @@ void Synthesizer::setAdsrParameters(float attack, float decay, float sustain, fl
 }
 
 //=============================================================================
+// TRANSPOSE PARAMETERS
+
+void Synthesizer::setTransposeValues(int octave, int semitone, int fine, float coarse)
+{
+    for (auto &oscillator : oscillators)
+    {
+        oscillator.setTransposeValues(octave, semitone, fine, coarse);
+    }
+}
+
+//=============================================================================
 // DETUNE PARAMETERS GETTERS & SETTERS
 
 // [1, MAX_DETUNE_VOICES]
@@ -276,7 +287,6 @@ void Synthesizer::startNote(int midiNoteNumber, float velocity)
     oscillator.setVelocity(velocity);
     oscillator.randomizePhases();
     oscillator.startAdsrEnvelope();
-
 }
 
 void Synthesizer::updateVoiceAges()

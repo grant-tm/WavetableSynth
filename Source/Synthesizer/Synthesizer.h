@@ -32,6 +32,7 @@ public:
 	void setPan(float);
 
 	void setAdsrParameters(float attack, float decay, float sustain, float release);
+	void setTransposeValues(int octave, int semitone, int fine, float coarse);
 
 	void setDetuneVoices(int);
 	void setDetuneMix(float);
@@ -48,6 +49,7 @@ private:
 	Oscillator oscillators[MAX_POLYPHONY];
 	juce::ADSR::Parameters adsrParameters;
 
+	//==============================================================================
 	float sampleRate;
 	float frequency;
 	float volume;

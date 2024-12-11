@@ -323,7 +323,7 @@ void WavetableSynthAudioProcessor::updateSynthesizerParametersFromValueTree()
     auto semitone = valueTree.getRawParameterValue("SEMITONE_TRANSPOSE")->load();
     auto fine = valueTree.getRawParameterValue("FINE_TRANSPOSE")->load();
     auto coarse = valueTree.getRawParameterValue("COARSE_TRANSPOSE")->load();
-    //synthesizer.setTranspose(octave, semitone, fine, coarse);
+    synthesizer.setTransposeValues((int) octave, (int) semitone, (int) fine, coarse);
 
     // set adsr parameters
     auto attack = valueTree.getRawParameterValue("ADSR_ATTACK")->load();

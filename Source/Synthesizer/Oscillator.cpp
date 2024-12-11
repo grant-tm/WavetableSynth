@@ -19,6 +19,11 @@ Oscillator::Oscillator()
 {
     adsrScalars.setSize(1, 8096, false, false, false);
     
+    octaveTranspose = 0;
+    semitoneTranspose = 0;
+    fineTranspose = 0;
+    coarseTranspose = 0.f;
+
     wavetable = nullptr;
     wavetableSize = 0;
     wavetableNumFrames = 0;
@@ -138,14 +143,22 @@ void Oscillator::applyRenderParameters(int detuneVoice)
 
 void Oscillator::applyDetuneRenderParameters(int detuneVoice)
 {
-    renderFrequency = baseFrequency * detuneFrequencyCoefficients[detuneVoice];
+    auto transposeSemitones = (12 * octaveTranspose) + (semitoneTranspose) + (fineTranspose / 100) + coarseTranspose;
+    auto transposeCoefficient = pow(2, transposeSemitones / 12);
+    
+    renderFrequency = baseFrequency * detuneFrequencyCoefficients[detuneVoice] * transposeCoefficient;
+
     renderVolume = baseVolume * detuneVolumeCoefficients[detuneVoice];
     calculateRenderPanCoefficients(basePan + detunePanningOffsets[detuneVoice]);
 }
 
 void Oscillator::applyBaseRenderParameters()
 {
-    renderFrequency = baseFrequency;
+    auto transposeSemitones = (12 * octaveTranspose) + (semitoneTranspose) + (fineTranspose / 100) + coarseTranspose;
+    auto transposeCoefficient = pow(2, transposeSemitones / 12);
+    
+    renderFrequency = baseFrequency * transposeCoefficient;
+ 
     renderVolume = baseVolume;
     calculateRenderPanCoefficients(basePan);
 }
@@ -157,6 +170,14 @@ void Oscillator::calculateRenderPanCoefficients(float pan)
 
     float rightAngle = (juce::MathConstants<float>::pi / 4.0f) * (1.0f + pan);
     renderPanCoefficientRight = std::sin(rightAngle);
+}
+
+void Oscillator::setTransposeValues(int octave, int semitone, int fine, float coarse)
+{
+    octaveTranspose = octave;
+    semitoneTranspose = semitone;
+    fineTranspose = fine;
+    coarseTranspose = coarse;
 }
 
 //=============================================================================
@@ -214,7 +235,6 @@ void Oscillator::calculateDetuneFrequencyCoefficients()
     for (int voicePair = 1; voicePair <= numVoicePairsToCreate; voicePair++)
     {
         float frequencyCoefficient = frequencyStep * voicePair;
-        //float frequencyCoefficient = 0.5f;
         detuneFrequencyCoefficients[numVoicesAssigned++] = 1 - frequencyCoefficient;
         detuneFrequencyCoefficients[numVoicesAssigned++] = 1 + frequencyCoefficient;
     }
