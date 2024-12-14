@@ -1,11 +1,3 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include <JuceHeader.h>
@@ -16,6 +8,7 @@
 #include "GUI Components/Button.h"
 #include "GUI Components/TransposeBar.h"
 #include "GUI Components/AdsrControls.h"
+#include "GUI Components/DetuneAndWarpControls.h"
 #include "GUI Components/Knob.h"
 #include "GUI Components/WavetableSlider.h"
 #include "GUI Components/WavetableDisplay.h"
@@ -74,13 +67,16 @@ private:
     ControlSurfaceAttachment sustainAttachment;
     ControlSurfaceAttachment releaseAttachment;
 
-    TransposeBar detuneVoicesAndWarpModeControls;
+    DetuneAndWarpControlBar detuneVoicesAndWarpModeControls;
+    ControlSurfaceAttachment detuneVoiceAttachment;
+    ControlSurfaceAttachment warpModeAttachment;
 
     struct WavetableDisplayComponent wavetableDisplay;
 
     Knob oscVolumeKnob;
     Knob oscPanningKnob;
     Knob oscDetuneMixKnob;
+    Knob oscDetuneSpreadKnob;
     Knob oscWarpAmountKnob;
     WavetableSlider oscWavetablePositionKnob;
 
@@ -89,6 +85,7 @@ private:
     ControlSurfaceAttachment oscVolumeKnobAttachment;
     ControlSurfaceAttachment oscPanningKnobAttachment;
     ControlSurfaceAttachment oscDetuneMixKnobAttachment;
+    ControlSurfaceAttachment oscDetuneSpreadKnobAttachment;
     ControlSurfaceAttachment oscWarpAmountKnobAttachment;
     ControlSurfaceAttachment oscWavetablePositionKnobAttachment;
 

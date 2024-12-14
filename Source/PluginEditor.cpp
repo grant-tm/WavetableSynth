@@ -25,9 +25,9 @@ WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(Wavetable
     semitoneTransposeAttachment(audioProcessor.valueTree, "SEMITONE_TRANSPOSE", transposeBar.semitoneSlider),
     fineTuneTransposeAttachment(audioProcessor.valueTree, "FINE_TRANSPOSE", transposeBar.fineSlider),
     coarsePitchTransposeAttachment(audioProcessor.valueTree, "COARSE_TRANSPOSE", transposeBar.coarseSlider),
-    
+
     wavetableDisplay(audioProcessor),
-    
+
     // ADSR CONTROLSS
     adsrControls(),
     attackAttachment(audioProcessor.valueTree, "ADSR_ATTACK", adsrControls.attackSlider),
@@ -36,6 +36,8 @@ WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(Wavetable
     releaseAttachment(audioProcessor.valueTree, "ADSR_RELEASE", adsrControls.releaseSlider),
 
     detuneVoicesAndWarpModeControls(),
+    detuneVoiceAttachment(audioProcessor.valueTree, "OSC_DETUNE_VOICES", detuneVoicesAndWarpModeControls.detuneVoiceSlider),
+    warpModeAttachment(audioProcessor.valueTree, "OSC_WARP_MODE", detuneVoicesAndWarpModeControls.warpModeSlider),
 
     // VOLUME KNOB
     oscVolumeKnob(*audioProcessor.valueTree.getParameter("OSC_VOLUME"), "VOL"),
@@ -46,9 +48,13 @@ WavetableSynthAudioProcessorEditor::WavetableSynthAudioProcessorEditor(Wavetable
     oscPanningKnobAttachment(audioProcessor.valueTree, "OSC_PANNING", oscPanningKnob),
     
     // DETUNE MIX KNOB
-    oscDetuneMixKnob(*audioProcessor.valueTree.getParameter("OSC_DETUNE_MIX"), "DETUNE"),
+    oscDetuneMixKnob(*audioProcessor.valueTree.getParameter("OSC_DETUNE_MIX"), "MIX"),
     oscDetuneMixKnobAttachment(audioProcessor.valueTree, "OSC_DETUNE_MIX", oscDetuneMixKnob),
     
+    // DETUNE SPREAD KNOB
+    oscDetuneSpreadKnob(*audioProcessor.valueTree.getParameter("OSC_DETUNE_SPREAD"), "SPREAD"),
+    oscDetuneSpreadKnobAttachment(audioProcessor.valueTree, "OSC_DETUNE_SPREAD", oscDetuneSpreadKnob),
+
     // WARP AMOUNT KNOB
     oscWarpAmountKnob(*audioProcessor.valueTree.getParameter("OSC_WARP_AMOUNT"), "WARP"),
     oscWarpAmountKnobAttachment(audioProcessor.valueTree, "OSC_WARP_AMOUNT", oscWarpAmountKnob),
@@ -184,11 +190,19 @@ void WavetableSynthAudioProcessorEditor::resized()
     auto oscPanningKnobArea = oscMixingKnobArea.removeFromTop(LARGE_KNOB_DIAMETER_PIXELS + 15);
     oscPanningKnob.setBounds(oscPanningKnobArea);
 
+    oscMixingKnobArea.removeFromTop(50);
+
     // detune mix
     auto oscDetuneMixKnobArea = oscMixingKnobArea.removeFromTop(SMALL_KNOB_DIAMETER_PIXELS + 15);
     oscDetuneMixKnobArea.removeFromRight(12);
     oscDetuneMixKnobArea.removeFromLeft(12);
     oscDetuneMixKnob.setBounds(oscDetuneMixKnobArea);
+
+    // detune spread
+    auto oscDetuneSpreadKnobArea = oscMixingKnobArea.removeFromTop(SMALL_KNOB_DIAMETER_PIXELS + 15);
+    oscDetuneSpreadKnobArea.removeFromRight(12);
+    oscDetuneSpreadKnobArea.removeFromLeft(12);
+    oscDetuneSpreadKnob.setBounds(oscDetuneSpreadKnobArea);
 
     //-----------------------------------------------------
     // RIGHT HAND KNOBS
@@ -215,6 +229,7 @@ std::vector<juce::Component*> WavetableSynthAudioProcessorEditor::getKnobs()
         &oscVolumeKnob,
         &oscPanningKnob,
         &oscDetuneMixKnob,
+        &oscDetuneSpreadKnob,
         &oscWarpAmountKnob,
         &oscWavetablePositionKnob
     };
