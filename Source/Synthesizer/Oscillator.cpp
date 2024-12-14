@@ -331,7 +331,7 @@ float Oscillator::getDetuneSpread() const
 
 void Oscillator::setDetuneSpread(float newDetuneSpread)
 {
-    this->detuneMix = clampFloat(newDetuneSpread, 0.f, 1.f);
+    this->detuneSpread = clampFloat(newDetuneSpread, 0.f, 1.f);
 }
 
 //=============================================================================

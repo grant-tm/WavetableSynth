@@ -13,7 +13,7 @@ void AdsrSliderLookAndFeel::drawLinearSlider(
 	bounds.removeFromRight(2);
 
 	// draw shadow
-	g.setColour(juce::Colour(0xFF97C6AE));
+	g.setColour(juce::Colour(0xFF78A18C));
 	g.drawLine(bounds.getX(), bounds.getY(), bounds.getRight(), bounds.getY()); // draw top edge
 	g.drawLine(bounds.getX(), bounds.getY(), bounds.getX(), bounds.getBottom()); // draw left edge
 
@@ -59,7 +59,7 @@ void AdsrSliderLookAndFeel::drawLinearSlider(
 
 	labelFont.setHeight(12);
 	g.setFont(labelFont);
-	g.setColour(juce::Colour(0xFF97C6AE));
+	g.setColour(juce::Colour(0xFF78A18C));
 	textBounds.removeFromTop(4);
 	g.drawFittedText(sliderText, textBounds, juce::Justification::bottomLeft, 1);
 
@@ -95,7 +95,7 @@ void SustainSliderLookAndFeel::drawLinearSlider(
 	bounds.removeFromRight(2);
 
 	// draw shadow
-	g.setColour(juce::Colour(0xFF97C6AE));
+	g.setColour(juce::Colour(0xFF78A18C));
 	g.drawLine(bounds.getX(), bounds.getY(), bounds.getRight(), bounds.getY()); // draw top edge
 	g.drawLine(bounds.getX(), bounds.getY(), bounds.getX(), bounds.getBottom()); // draw left edge
 
@@ -128,7 +128,7 @@ void SustainSliderLookAndFeel::drawLinearSlider(
 
 	labelFont.setHeight(12);
 	g.setFont(labelFont);
-	g.setColour(juce::Colour(0xFF97C6AE));
+	g.setColour(juce::Colour(0xFF78A18C));
 	textBounds.removeFromTop(4);
 	g.drawFittedText(sliderText, textBounds, juce::Justification::bottomLeft, 1);
 

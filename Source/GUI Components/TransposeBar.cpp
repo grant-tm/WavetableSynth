@@ -13,7 +13,7 @@ void TransposeSliderLookAndFeel::drawLinearSlider(
 	bounds.removeFromRight(2);
 
 	// draw shadow
-	g.setColour(juce::Colour(0xFF97C6AE));
+	g.setColour(juce::Colour(0xFF78A18C));
 	g.drawLine(bounds.getX(), bounds.getY(), bounds.getRight(), bounds.getY()); // draw top edge
 	g.drawLine(bounds.getX(), bounds.getY(), bounds.getX(), bounds.getBottom()); // draw left edge
 
@@ -46,6 +46,7 @@ void TransposeSliderLookAndFeel::drawLinearSlider(
 		if (sliderValue > 0)
 			sliderText = "+" + sliderText;
 	}
+	g.setColour(juce::Colour(0xFF78A18C));
 	g.drawFittedText(sliderText, textBounds, juce::Justification::bottomLeft, 1);
 };
 
