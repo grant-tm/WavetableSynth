@@ -13,6 +13,10 @@
         <FILE id="gYCV9c" name="AdsrControls.h" compile="0" resource="0" file="Source/GUI Components/AdsrControls.h"/>
         <FILE id="UuvW93" name="Button.cpp" compile="1" resource="0" file="Source/GUI Components/Button.cpp"/>
         <FILE id="BMRJrT" name="Button.h" compile="0" resource="0" file="Source/GUI Components/Button.h"/>
+        <FILE id="LJ1DVI" name="DetuneAndWarpControls.cpp" compile="1" resource="0"
+              file="Source/GUI Components/DetuneAndWarpControls.cpp"/>
+        <FILE id="v1LFWR" name="DetuneAndWarpControls.h" compile="0" resource="0"
+              file="Source/GUI Components/DetuneAndWarpControls.h"/>
         <FILE id="jl7PIL" name="Knob.cpp" compile="1" resource="0" file="Source/GUI Components/Knob.cpp"/>
         <FILE id="NEVLcl" name="Knob.h" compile="0" resource="0" file="Source/GUI Components/Knob.h"/>
         <FILE id="SPl7gK" name="TransposeBar.cpp" compile="1" resource="0"
