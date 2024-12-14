@@ -214,7 +214,6 @@ void Oscillator::calculateDetuneFrequencyCoefficients()
     for (int voicePair = 1; voicePair <= numVoicePairsToCreate; voicePair++)
     {
         float frequencyCoefficient = frequencyStep * voicePair;
-        //float frequencyCoefficient = 0.5f;
         detuneFrequencyCoefficients[numVoicesAssigned++] = 1 - frequencyCoefficient;
         detuneFrequencyCoefficients[numVoicesAssigned++] = 1 + frequencyCoefficient;
     }
@@ -311,7 +310,7 @@ float Oscillator::getDetuneSpread() const
 
 void Oscillator::setDetuneSpread(float newDetuneSpread)
 {
-    this->detuneMix = clampFloat(newDetuneSpread, 0.f, 1.f);
+    this->detuneSpread = clampFloat(newDetuneSpread, 0.f, 1.f);
 }
 
 //=============================================================================

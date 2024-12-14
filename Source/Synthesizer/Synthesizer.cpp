@@ -121,7 +121,7 @@ void Synthesizer::setDetuneMix(float newDetuneMix)
 // [0, 1]
 void Synthesizer::setDetuneSpread(float newDetuneSpread)
 {
-    this->detuneMix = clampFloat(newDetuneSpread, 0.f, 1.f);
+    this->detuneSpread = clampFloat(newDetuneSpread, 0.f, 1.f);
 }
 
 //=============================================================================
